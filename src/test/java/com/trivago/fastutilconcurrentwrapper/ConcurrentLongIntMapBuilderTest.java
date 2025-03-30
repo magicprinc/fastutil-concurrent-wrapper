@@ -4,8 +4,7 @@ import com.trivago.fastutilconcurrentwrapper.map.ConcurrentBusyWaitingLongIntMap
 import com.trivago.fastutilconcurrentwrapper.map.ConcurrentLongIntMap;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ConcurrentLongIntMapBuilderTest {
     private final int DEFAULT_VALUE = -1;
@@ -24,7 +23,7 @@ public class ConcurrentLongIntMapBuilderTest {
         map.put(1L, 10);
         int v = map.get(1L);
 
-        assertTrue(map instanceof ConcurrentBusyWaitingLongIntMap);
+			  assertInstanceOf(ConcurrentBusyWaitingLongIntMap.class, map);
         assertEquals(10, v);
         assertEquals(map.get(2L), map.getDefaultValue());
     }

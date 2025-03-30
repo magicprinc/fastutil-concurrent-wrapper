@@ -1,39 +1,32 @@
 package com.trivago.fastutilconcurrentwrapper.map;
 
 import com.trivago.fastutilconcurrentwrapper.LongLongMap;
-import com.trivago.fastutilconcurrentwrapper.wrapper.PrimitiveFastutilLongLongWrapper;
 import it.unimi.dsi.fastutil.longs.Long2LongFunction;
+import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
 public class ConcurrentBusyWaitingLongLongMap extends PrimitiveConcurrentMap implements LongLongMap {
-
-    private final LongLongMap[] maps;
+    private final Long2LongOpenHashMap[] maps;
     private final long defaultValue;
 
-    public ConcurrentBusyWaitingLongLongMap(int numBuckets,
-                                            int initialCapacity,
-                                            float loadFactor,
-                                            long defaultValue) {
+    public ConcurrentBusyWaitingLongLongMap(
+        int numBuckets,
+        int initialCapacity,
+        float loadFactor,
+        long defaultValue
+    ){
         super(numBuckets);
-
-        this.maps = new LongLongMap[numBuckets];
+        this.maps = new Long2LongOpenHashMap[numBuckets];
         this.defaultValue = defaultValue;
-
-        for (int i = 0; i < numBuckets; i++) {
-            maps[i] = new PrimitiveFastutilLongLongWrapper(initialCapacity, loadFactor, defaultValue);
-        }
+        for (int i = 0; i < numBuckets; i++)
+            maps[i] = new Long2LongOpenHashMap(initialCapacity, loadFactor);
     }
 
     @Override
-    public int size() {
-        return super.size(maps);
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return super.isEmpty(maps);
+    protected int sizeOfMap (int index) {
+        return maps[index].size();
     }
 
     @Override
@@ -50,6 +43,7 @@ public class ConcurrentBusyWaitingLongLongMap extends PrimitiveConcurrentMap imp
                     readLock.unlock();
                 }
             }
+            Thread.onSpinWait();
         }
     }
 
@@ -62,11 +56,12 @@ public class ConcurrentBusyWaitingLongLongMap extends PrimitiveConcurrentMap imp
         while (true) {
             if (readLock.tryLock()) {
                 try {
-                    return maps[bucket].get(key);
+                    return maps[bucket].getOrDefault(key, defaultValue);
                 } finally {
                     readLock.unlock();
                 }
             }
+            Thread.onSpinWait();
         }
     }
 
@@ -84,13 +79,11 @@ public class ConcurrentBusyWaitingLongLongMap extends PrimitiveConcurrentMap imp
                     writeLock.unlock();
                 }
             }
+            Thread.onSpinWait();
         }
     }
 
-    @Override
-    public long getDefaultValue() {
-        return defaultValue;
-    }
+    @Override public long getDefaultValue (){ return defaultValue; }
 
     @Override
     public long remove(long key) {
@@ -106,6 +99,7 @@ public class ConcurrentBusyWaitingLongLongMap extends PrimitiveConcurrentMap imp
                     writeLock.unlock();
                 }
             }
+            Thread.onSpinWait();
         }
     }
 
@@ -123,6 +117,7 @@ public class ConcurrentBusyWaitingLongLongMap extends PrimitiveConcurrentMap imp
                     writeLock.unlock();
                 }
             }
+            Thread.onSpinWait();
         }
     }
 
@@ -140,6 +135,7 @@ public class ConcurrentBusyWaitingLongLongMap extends PrimitiveConcurrentMap imp
                     writeLock.unlock();
                 }
             }
+            Thread.onSpinWait();
         }
     }
 
@@ -157,6 +153,7 @@ public class ConcurrentBusyWaitingLongLongMap extends PrimitiveConcurrentMap imp
                     writeLock.unlock();
                 }
             }
+            Thread.onSpinWait();
         }
     }
 }

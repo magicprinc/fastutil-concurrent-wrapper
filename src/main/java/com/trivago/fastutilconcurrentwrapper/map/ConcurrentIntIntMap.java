@@ -1,41 +1,32 @@
 package com.trivago.fastutilconcurrentwrapper.map;
 
 import com.trivago.fastutilconcurrentwrapper.IntIntMap;
-import com.trivago.fastutilconcurrentwrapper.wrapper.PrimitiveFastutilIntIntWrapper;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
 public class ConcurrentIntIntMap extends PrimitiveConcurrentMap implements IntIntMap {
-
-    private final IntIntMap[] maps;
+    private final Int2IntOpenHashMap[] maps;
     private final int defaultValue;
 
     public ConcurrentIntIntMap(
-            int numBuckets,
-            int initialCapacity,
-            float loadFactor,
-            int defaultValue) {
-
+        int numBuckets,
+        int initialCapacity,
+        float loadFactor,
+        int defaultValue
+    ){
         super(numBuckets);
-
-        this.maps = new IntIntMap[numBuckets];
+        this.maps = new Int2IntOpenHashMap[numBuckets];
         this.defaultValue = defaultValue;
-
-        for (int i = 0; i < numBuckets; i++) {
-            maps[i] = new PrimitiveFastutilIntIntWrapper(initialCapacity, loadFactor, defaultValue);
-        }
+        for (int i = 0; i < numBuckets; i++)
+            maps[i] = new Int2IntOpenHashMap(initialCapacity, loadFactor);
     }
 
     @Override
-    public int size() {
-        return super.size(maps);
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return super.isEmpty(maps);
+    protected int sizeOfMap (int index) {
+        return maps[index].size();
     }
 
     @Override
@@ -52,43 +43,32 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap implements IntIn
     }
 
     @Override
-    public int get(int l) {
-        int bucket = getBucket(l);
-
-        int result;
+    public int get (int key) {
+        int bucket = getBucket(key);
 
         Lock readLock = locks[bucket].readLock();
         readLock.lock();
         try {
-            result = maps[bucket].get(l);
+            return maps[bucket].getOrDefault(key, defaultValue);
         } finally {
             readLock.unlock();
         }
-
-        return result;
     }
 
     @Override
     public int put(int key, int value) {
         int bucket = getBucket(key);
 
-        int result;
-
         Lock writeLock = locks[bucket].writeLock();
         writeLock.lock();
         try {
-            result = maps[bucket].put(key, value);
+            return maps[bucket].put(key, value);
         } finally {
             writeLock.unlock();
         }
-
-        return result;
     }
 
-    @Override
-    public int getDefaultValue() {
-        return defaultValue;
-    }
+    @Override public int getDefaultValue (){ return defaultValue; }
 
     @Override
     public int remove(int key) {

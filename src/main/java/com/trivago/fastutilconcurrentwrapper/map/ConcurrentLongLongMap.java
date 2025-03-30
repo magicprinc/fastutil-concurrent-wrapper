@@ -1,39 +1,32 @@
 package com.trivago.fastutilconcurrentwrapper.map;
 
 import com.trivago.fastutilconcurrentwrapper.LongLongMap;
-import com.trivago.fastutilconcurrentwrapper.wrapper.PrimitiveFastutilLongLongWrapper;
 import it.unimi.dsi.fastutil.longs.Long2LongFunction;
+import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
 public class ConcurrentLongLongMap extends PrimitiveConcurrentMap implements LongLongMap {
-
-    private final LongLongMap[] maps;
+    private final Long2LongOpenHashMap[] maps;
     private final long defaultValue;
 
-    public ConcurrentLongLongMap(int numBuckets,
-                                 int initialCapacity,
-                                 float loadFactor,
-                                 long defaultValue) {
+    public ConcurrentLongLongMap(
+        int numBuckets,
+        int initialCapacity,
+        float loadFactor,
+        long defaultValue
+    ){
         super(numBuckets);
-
-        this.maps = new LongLongMap[numBuckets];
+        this.maps = new Long2LongOpenHashMap[numBuckets];
         this.defaultValue = defaultValue;
-
-        for (int i = 0; i < numBuckets; i++) {
-            maps[i] = new PrimitiveFastutilLongLongWrapper(initialCapacity, loadFactor, defaultValue);
-        }
+        for (int i = 0; i < numBuckets; i++)
+            maps[i] = new Long2LongOpenHashMap(initialCapacity, loadFactor);
     }
 
     @Override
-    public int size() {
-        return super.size(maps);
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return super.isEmpty(maps);
+    protected int sizeOfMap (int index) {
+        return maps[index].size();
     }
 
     @Override
@@ -50,43 +43,32 @@ public class ConcurrentLongLongMap extends PrimitiveConcurrentMap implements Lon
     }
 
     @Override
-    public long get(long l) {
-        int bucket = getBucket(l);
-
-        long result;
+    public long get (long key) {
+        int bucket = getBucket(key);
 
         Lock readLock = locks[bucket].readLock();
         readLock.lock();
         try {
-            result = maps[bucket].get(l);
+            return maps[bucket].getOrDefault(key, defaultValue);
         } finally {
             readLock.unlock();
         }
-
-        return result;
     }
 
     @Override
     public long put(long key, long value) {
         int bucket = getBucket(key);
 
-        long result;
-
         Lock writeLock = locks[bucket].writeLock();
         writeLock.lock();
         try {
-            result = maps[bucket].put(key, value);
+            return maps[bucket].put(key, value);
         } finally {
             writeLock.unlock();
         }
-
-        return result;
     }
 
-    @Override
-    public long getDefaultValue() {
-        return defaultValue;
-    }
+    @Override public long getDefaultValue (){ return defaultValue; }
 
     @Override
     public long remove(long key) {

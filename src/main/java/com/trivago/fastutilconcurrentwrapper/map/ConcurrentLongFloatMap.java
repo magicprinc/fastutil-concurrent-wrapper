@@ -1,44 +1,34 @@
 package com.trivago.fastutilconcurrentwrapper.map;
 
 import com.trivago.fastutilconcurrentwrapper.LongFloatMap;
-import com.trivago.fastutilconcurrentwrapper.wrapper.PrimitiveFastutilLongFloatWrapper;
 import it.unimi.dsi.fastutil.longs.Long2FloatFunction;
+import it.unimi.dsi.fastutil.longs.Long2FloatOpenHashMap;
 
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
 public class ConcurrentLongFloatMap extends PrimitiveConcurrentMap implements LongFloatMap {
-
-    private final LongFloatMap[] maps;
+    private final Long2FloatOpenHashMap[] maps;
     private final float defaultValue;
 
-    public ConcurrentLongFloatMap(int numBuckets,
-                                  int initialCapacity,
-                                  float loadFactor,
-                                  float defaultValue) {
+    public ConcurrentLongFloatMap (
+        int numBuckets,
+        int initialCapacity,
+        float loadFactor,
+        float defaultValue
+    ){
         super(numBuckets);
-
-        this.maps = new LongFloatMap[numBuckets];
+        this.maps = new Long2FloatOpenHashMap[numBuckets];
         this.defaultValue = defaultValue;
-
-        for (int i = 0; i < numBuckets; i++) {
-            maps[i] = new PrimitiveFastutilLongFloatWrapper(initialCapacity, loadFactor, defaultValue);
-        }
+        for (int i = 0; i < numBuckets; i++)
+            maps[i] = new Long2FloatOpenHashMap(initialCapacity, loadFactor);
     }
 
-    @Override
-    public float getDefaultValue() {
-        return defaultValue;
-    }
+    @Override public float getDefaultValue (){ return defaultValue; }
 
     @Override
-    public int size() {
-        return super.size(maps);
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return super.isEmpty(maps);
+    protected int sizeOfMap (int index) {
+        return maps[index].size();
     }
 
     @Override
@@ -55,37 +45,29 @@ public class ConcurrentLongFloatMap extends PrimitiveConcurrentMap implements Lo
     }
 
     @Override
-    public float get(long l) {
-        int bucket = getBucket(l);
-
-        float result;
+    public float get(long key) {
+        int bucket = getBucket(key);
 
         Lock readLock = locks[bucket].readLock();
         readLock.lock();
         try {
-            result = maps[bucket].get(l);
+            return maps[bucket].getOrDefault(key, defaultValue);
         } finally {
             readLock.unlock();
         }
-
-        return result;
     }
 
     @Override
     public float put(long key, float value) {
         int bucket = getBucket(key);
 
-        float result;
-
         Lock writeLock = locks[bucket].writeLock();
         writeLock.lock();
         try {
-            result = maps[bucket].put(key, value);
+            return maps[bucket].put(key, value);
         } finally {
             writeLock.unlock();
         }
-
-        return result;
     }
 
     @Override
