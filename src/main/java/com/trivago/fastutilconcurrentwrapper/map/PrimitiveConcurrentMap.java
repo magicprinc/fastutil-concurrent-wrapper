@@ -60,7 +60,7 @@ public abstract class PrimitiveConcurrentMap implements PrimitiveKeyMap {
         return bucket(key, numBuckets);// Integer.hashCode(key) == key
     }
 
-    public static int bucket (int hash, int bucketSize) {
+    static int bucket (int hash, int bucketSize) {
         return Math.abs(HashCommon.mix(hash) % bucketSize);
     }
 }
