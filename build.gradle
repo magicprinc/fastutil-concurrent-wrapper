@@ -10,13 +10,26 @@ allprojects {
         mavenLocal()
         mavenCentral()
         maven {
-            url "https://plugins.gradle.org/m2/"
+            url = "https://plugins.gradle.org/m2/"
         }
     }
 }
 
-group 'com.trivago'
-version '0.2.3-SNAPSHOT'
+tasks.withType(JavaCompile).configureEach { // ? gradle.projectsEvaluated {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll(['-Xlint:all,-serial', '-parameters'])
+    options.release.set(17)
+    options.deprecation = true
+
+//    options.errorprone {
+//        enabled = true // <<<!!! You can disable Error-Prone here!
+//        disableWarningsInGeneratedCode = true
+//        excludedPaths = ".*/build/(generated|test).*/.*"
+//        disable("UnusedVariable")
+//        disable("MissingSummary")
+//        errorproneArgs = ["-XepExcludedPaths:.*/test/.*"]
+//    }
+}
 
 mavenPublishing {
     pom {
@@ -55,9 +68,6 @@ mavenPublishing {
     }
 }
 
-sourceCompatibility = 11
-targetCompatibility = 11
-
 sourceSets {
     jmh {
         java.srcDirs = ['src/jmh/java']
@@ -67,10 +77,10 @@ sourceSets {
 }
 
 dependencies {
-    api group: 'it.unimi.dsi', name: 'fastutil', version: '8.5.9'
+    api group: 'it.unimi.dsi', name: 'fastutil', version: 'latest.release'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.+'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.+'
 }
 
 test {
