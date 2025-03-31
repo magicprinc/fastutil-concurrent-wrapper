@@ -1,7 +1,7 @@
 package com.trivago.fastutilconcurrentwrapper.longlong;
 
 import com.trivago.fastutilconcurrentwrapper.AbstractMapTest;
-import com.trivago.fastutilconcurrentwrapper.map.ConcurrentLongLongMap;
+import com.trivago.fastutilconcurrentwrapper.longkey.ConcurrentLongLongMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

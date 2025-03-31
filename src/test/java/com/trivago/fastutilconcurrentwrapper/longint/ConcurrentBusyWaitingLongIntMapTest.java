@@ -1,6 +1,6 @@
 package com.trivago.fastutilconcurrentwrapper.longint;
 
-import com.trivago.fastutilconcurrentwrapper.map.ConcurrentBusyWaitingLongIntMap;
+import com.trivago.fastutilconcurrentwrapper.longkey.ConcurrentBusyWaitingLongIntMap;
 
 public class ConcurrentBusyWaitingLongIntMapTest extends AbstractLongIntMapTest {
   @Override

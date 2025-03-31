@@ -1,4 +1,4 @@
-package com.trivago.fastutilconcurrentwrapper.map;
+package com.trivago.fastutilconcurrentwrapper.intkey;
 
 import org.junit.jupiter.api.Test;
 

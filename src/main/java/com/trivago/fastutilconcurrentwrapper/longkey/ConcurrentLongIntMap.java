@@ -1,5 +1,6 @@
-package com.trivago.fastutilconcurrentwrapper.map;
+package com.trivago.fastutilconcurrentwrapper.longkey;
 
+import com.trivago.fastutilconcurrentwrapper.PrimitiveConcurrentMap;
 import com.trivago.fastutilconcurrentwrapper.PrimitiveMapBuilder;
 import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.longs.Long2IntFunction;

@@ -1,17 +1,17 @@
-package com.trivago.fastutilconcurrentwrapper.map;
+package com.trivago.fastutilconcurrentwrapper.intkey;
 
-import it.unimi.dsi.fastutil.longs.Long2FloatFunction;
+import it.unimi.dsi.fastutil.ints.Int2FloatFunction;
 
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
-public class ConcurrentBusyWaitingLongFloatMap extends ConcurrentLongFloatMap {
-    public ConcurrentBusyWaitingLongFloatMap (int numBuckets, int initialCapacity, float loadFactor, float defaultValue) {
+public class ConcurrentBusyWaitingIntFloatMap extends ConcurrentIntFloatMap {
+    public ConcurrentBusyWaitingIntFloatMap (int numBuckets, int initialCapacity, float loadFactor, float defaultValue) {
         super(numBuckets, initialCapacity, loadFactor, defaultValue);
     }
 
     @Override
-    public boolean containsKey(long key) {
+		public boolean containsKey(int key) {
         int bucket = getBucket(key);
 
         Lock readLock = locks[bucket].readLock();
@@ -29,7 +29,7 @@ public class ConcurrentBusyWaitingLongFloatMap extends ConcurrentLongFloatMap {
     }
 
     @Override
-    public float get(long key) {
+		public float get (int key) {
         int bucket = getBucket(key);
 
         Lock readLock = locks[bucket].readLock();
@@ -47,7 +47,7 @@ public class ConcurrentBusyWaitingLongFloatMap extends ConcurrentLongFloatMap {
     }
 
     @Override
-    public float put(long key, float value) {
+		public float put(int key, float value) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -65,7 +65,7 @@ public class ConcurrentBusyWaitingLongFloatMap extends ConcurrentLongFloatMap {
     }
 
     @Override
-    public float remove(long key) {
+		public float remove(int key) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -83,7 +83,7 @@ public class ConcurrentBusyWaitingLongFloatMap extends ConcurrentLongFloatMap {
     }
 
     @Override
-    public boolean remove(long key, float value) {
+		public boolean remove(int key, float value) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -101,7 +101,7 @@ public class ConcurrentBusyWaitingLongFloatMap extends ConcurrentLongFloatMap {
     }
 
     @Override
-    public float computeIfAbsent(long key, Long2FloatFunction mappingFunction) {
+		public float computeIfAbsent(int key, Int2FloatFunction mappingFunction) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -119,7 +119,7 @@ public class ConcurrentBusyWaitingLongFloatMap extends ConcurrentLongFloatMap {
     }
 
     @Override
-    public float computeIfPresent(int key, BiFunction<Long, Float, Float> mappingFunction) {
+		public float computeIfPresent(int key, BiFunction<Integer, Float, Float> mappingFunction) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();

@@ -1,12 +1,12 @@
-package com.trivago.fastutilconcurrentwrapper.map;
+package com.trivago.fastutilconcurrentwrapper.longkey;
 
-import it.unimi.dsi.fastutil.longs.Long2IntFunction;
+import it.unimi.dsi.fastutil.longs.Long2LongFunction;
 
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
-public class ConcurrentBusyWaitingLongIntMap extends ConcurrentLongIntMap {
-    public ConcurrentBusyWaitingLongIntMap (int numBuckets, int initialCapacity, float loadFactor, int defaultValue) {
+public class ConcurrentBusyWaitingLongLongMap extends ConcurrentLongLongMap {
+    public ConcurrentBusyWaitingLongLongMap (int numBuckets, int initialCapacity, float loadFactor, long defaultValue) {
         super(numBuckets, initialCapacity, loadFactor, defaultValue);
     }
 
@@ -29,7 +29,7 @@ public class ConcurrentBusyWaitingLongIntMap extends ConcurrentLongIntMap {
     }
 
     @Override
-    public int get(long key) {
+    public long get(long key) {
         int bucket = getBucket(key);
 
         Lock readLock = locks[bucket].readLock();
@@ -47,7 +47,7 @@ public class ConcurrentBusyWaitingLongIntMap extends ConcurrentLongIntMap {
     }
 
     @Override
-    public int put(long key, int value) {
+    public long put(long key, long value) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -65,7 +65,7 @@ public class ConcurrentBusyWaitingLongIntMap extends ConcurrentLongIntMap {
     }
 
     @Override
-    public int remove(long key) {
+    public long remove(long key) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -83,7 +83,7 @@ public class ConcurrentBusyWaitingLongIntMap extends ConcurrentLongIntMap {
     }
 
     @Override
-    public boolean remove(long key, int value) {
+    public boolean remove(long key, long value) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -101,7 +101,7 @@ public class ConcurrentBusyWaitingLongIntMap extends ConcurrentLongIntMap {
     }
 
     @Override
-    public int computeIfAbsent(long key, Long2IntFunction mappingFunction) {
+    public long computeIfAbsent(long key, Long2LongFunction mappingFunction) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -119,7 +119,7 @@ public class ConcurrentBusyWaitingLongIntMap extends ConcurrentLongIntMap {
     }
 
     @Override
-    public int computeIfPresent(long key, BiFunction<Long, Integer, Integer> mappingFunction) {
+    public long computeIfPresent(long key, BiFunction<Long, Long, Long> mappingFunction) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();

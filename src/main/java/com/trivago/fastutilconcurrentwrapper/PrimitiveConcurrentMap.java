@@ -1,6 +1,5 @@
-package com.trivago.fastutilconcurrentwrapper.map;
+package com.trivago.fastutilconcurrentwrapper;
 
-import com.trivago.fastutilconcurrentwrapper.PrimitiveKeyMap;
 import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.HashCommon;
 
@@ -16,12 +15,14 @@ public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
     protected final int numBuckets;
     protected final ReadWriteLock[] locks;
 
-    protected PrimitiveConcurrentMap(int numBuckets) {
+    protected PrimitiveConcurrentMap (int numBuckets) {
+        if (numBuckets < 1 || numBuckets > 100_000_000)
+            throw new IllegalArgumentException("numBuckets must be between 1 and 100_000_000, but: "+ numBuckets);
         this.numBuckets = numBuckets;
         this.locks = new ReadWriteLock[numBuckets];
         for (int i = 0; i < numBuckets; i++)
             locks[i] = new ReentrantReadWriteLock();
-    }
+    }//new
 
     /** Lock must be held! */
     protected abstract Function<K,V> mapAt (int index);
@@ -79,7 +80,7 @@ public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
         return bucket(key, numBuckets);// Integer.hashCode(key) == key
     }
 
-    static int bucket (int hash, int bucketSize) {
+    public static int bucket (int hash, int bucketSize) {
         return Math.abs(HashCommon.mix(hash) % bucketSize);
     }
 }

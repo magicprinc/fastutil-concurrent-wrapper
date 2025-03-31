@@ -1,7 +1,7 @@
 package com.trivago.fastutilconcurrentwrapper.longint;
 
 import com.trivago.fastutilconcurrentwrapper.AbstractMapTest;
-import com.trivago.fastutilconcurrentwrapper.map.ConcurrentLongIntMap;
+import com.trivago.fastutilconcurrentwrapper.longkey.ConcurrentLongIntMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
