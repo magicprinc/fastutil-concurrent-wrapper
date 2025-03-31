@@ -1,38 +1,38 @@
-package com.trivago.fastutilconcurrentwrapper.longkey;
+package com.trivago.fastutilconcurrentwrapper.objkey;
 
 import com.trivago.fastutilconcurrentwrapper.PrimitiveConcurrentMap;
 import com.trivago.fastutilconcurrentwrapper.PrimitiveMapBuilder;
 import it.unimi.dsi.fastutil.Function;
-import it.unimi.dsi.fastutil.longs.Long2ObjectFunction;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2LongFunction;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
-public class ConcurrentLongObjectMap<V> extends PrimitiveConcurrentMap<Long,V> {
-    protected final Long2ObjectOpenHashMap<V>[] maps;
-    protected final V defaultValue;
+public class ConcurrentObjectLongMap<K> extends PrimitiveConcurrentMap<K,Long> {
+    protected final Object2LongOpenHashMap<K>[] maps;
+    protected final long defaultValue;
 
     @SuppressWarnings("unchecked")
-		public ConcurrentLongObjectMap (
+		public ConcurrentObjectLongMap (
         int numBuckets,
         int initialCapacity,
         float loadFactor,
-        V defaultValue
+        long defaultValue
     ){
         super(numBuckets);
-        this.maps = new Long2ObjectOpenHashMap[numBuckets];
+        this.maps = new Object2LongOpenHashMap[numBuckets];
         this.defaultValue = defaultValue;
         for (int i = 0; i < numBuckets; i++)
-            maps[i] = new Long2ObjectOpenHashMap<>(initialCapacity, loadFactor);
+            maps[i] = new Object2LongOpenHashMap<>(initialCapacity, loadFactor);
     }
 
     @Override
-    protected final Function<Long,V> mapAt (int index) {
+    protected final Function<K,Long> mapAt (int index) {
         return maps[index];
     }
 
-    public boolean containsKey(long key) {
+    public boolean containsKey(K key) {
         int bucket = getBucket(key);
 
         Lock readLock = locks[bucket].readLock();
@@ -44,7 +44,7 @@ public class ConcurrentLongObjectMap<V> extends PrimitiveConcurrentMap<Long,V> {
         }
     }
 
-    public V get (long key) {
+    public long get (K key) {
         int bucket = getBucket(key);
 
         Lock readLock = locks[bucket].readLock();
@@ -56,7 +56,7 @@ public class ConcurrentLongObjectMap<V> extends PrimitiveConcurrentMap<Long,V> {
         }
     }
 
-    public V put (long key, V value) {
+    public long put (K key, long value) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -68,21 +68,21 @@ public class ConcurrentLongObjectMap<V> extends PrimitiveConcurrentMap<Long,V> {
         }
     }
 
-    public V getDefaultValue (){ return defaultValue; }
+    public long getDefaultValue (){ return defaultValue; }
 
-    public V remove (long key) {
+    public long remove (K key) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
         writeLock.lock();
         try {
-            return maps[bucket].remove(key);
+            return maps[bucket].removeLong(key);
         } finally {
             writeLock.unlock();
         }
     }
 
-    public boolean remove(long key, V value) {
+    public boolean remove (K key, long value) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -94,7 +94,7 @@ public class ConcurrentLongObjectMap<V> extends PrimitiveConcurrentMap<Long,V> {
         }
     }
 
-    public V computeIfAbsent (long key, Long2ObjectFunction<V> mappingFunction) {
+    public long computeIfAbsent (K key, Object2LongFunction<K> mappingFunction) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -106,7 +106,7 @@ public class ConcurrentLongObjectMap<V> extends PrimitiveConcurrentMap<Long,V> {
         }
     }
 
-    public V computeIfPresent (long key, BiFunction<Long,V,V> mappingFunction) {
+    public long computeIfPresent (K key, BiFunction<K,Long,Long> mappingFunction) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -118,13 +118,13 @@ public class ConcurrentLongObjectMap<V> extends PrimitiveConcurrentMap<Long,V> {
         }
     }
 
-    public static <V> PrimitiveMapBuilder<ConcurrentLongObjectMap<V>,V> newBuilder () {
+    public static <K> PrimitiveMapBuilder<ConcurrentObjectLongMap<K>,Long> newBuilder () {
         return new PrimitiveMapBuilder<>(){
             @Override
-            public ConcurrentLongObjectMap<V> build() {
+            public ConcurrentObjectLongMap<K> build() {
                 return switch (mapMode){
-                    case BUSY_WAITING -> new ConcurrentBusyWaitingLongObjectMap<>(buckets, initialCapacity, loadFactor, super.defaultValue);
-                    case BLOCKING -> new ConcurrentLongObjectMap<>(buckets, initialCapacity, loadFactor, super.defaultValue);
+                    case BUSY_WAITING -> new ConcurrentBusyWaitingObjectLongMap<>(buckets, initialCapacity, loadFactor, super.defaultValue);
+                    case BLOCKING -> new ConcurrentObjectLongMap<>(buckets, initialCapacity, loadFactor, super.defaultValue);
                 };
             }
         };

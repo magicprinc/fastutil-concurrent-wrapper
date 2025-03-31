@@ -81,6 +81,10 @@ public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
         return bucket(key, numBuckets);// Integer.hashCode(key) == key
     }
 
+    protected int getBucket (Object key) {
+        return key != null ? bucket(key.hashCode(), numBuckets) : 0;
+    }
+
     public static int bucket (int hash, int bucketSize) {
         return Math.abs(HashCommon.mix(hash) % bucketSize);
     }
