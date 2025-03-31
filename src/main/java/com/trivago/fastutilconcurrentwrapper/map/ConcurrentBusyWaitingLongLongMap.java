@@ -1,33 +1,13 @@
 package com.trivago.fastutilconcurrentwrapper.map;
 
-import com.trivago.fastutilconcurrentwrapper.LongLongMap;
-import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.longs.Long2LongFunction;
-import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
-public class ConcurrentBusyWaitingLongLongMap extends PrimitiveConcurrentMap<Long,Long> implements LongLongMap {
-    private final Long2LongOpenHashMap[] maps;
-    private final long defaultValue;
-
-    public ConcurrentBusyWaitingLongLongMap(
-        int numBuckets,
-        int initialCapacity,
-        float loadFactor,
-        long defaultValue
-    ){
-        super(numBuckets);
-        this.maps = new Long2LongOpenHashMap[numBuckets];
-        this.defaultValue = defaultValue;
-        for (int i = 0; i < numBuckets; i++)
-            maps[i] = new Long2LongOpenHashMap(initialCapacity, loadFactor);
-    }
-
-    @Override
-    protected Function<Long,Long> mapAt (int index) {
-        return maps[index];
+public class ConcurrentBusyWaitingLongLongMap extends ConcurrentLongLongMap {
+    public ConcurrentBusyWaitingLongLongMap (int numBuckets, int initialCapacity, float loadFactor, long defaultValue) {
+        super(numBuckets, initialCapacity, loadFactor, defaultValue);
     }
 
     @Override
@@ -83,8 +63,6 @@ public class ConcurrentBusyWaitingLongLongMap extends PrimitiveConcurrentMap<Lon
             Thread.onSpinWait();
         }
     }
-
-    @Override public long getDefaultValue (){ return defaultValue; }
 
     @Override
     public long remove(long key) {

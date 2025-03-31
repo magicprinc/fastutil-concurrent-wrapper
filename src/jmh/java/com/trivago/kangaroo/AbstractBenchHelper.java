@@ -1,24 +1,24 @@
 package com.trivago.kangaroo;
 
-import com.trivago.fastutilconcurrentwrapper.LongLongMap;
 import com.trivago.fastutilconcurrentwrapper.PrimitiveMapBuilder;
+import com.trivago.fastutilconcurrentwrapper.map.ConcurrentLongLongMap;
 
 import java.util.concurrent.ThreadLocalRandom;
 
 public abstract class AbstractBenchHelper extends AbstractCommonBenchHelper {
     protected static final int NUM_VALUES = 1_000_000;
-    protected LongLongMap map;
+    protected ConcurrentLongLongMap map;
 
     public void initAndLoadData(PrimitiveMapBuilder.MapMode mode) {
         if (mode == PrimitiveMapBuilder.MapMode.BUSY_WAITING){
-            map = LongLongMap.newBuilder()
+            map = ConcurrentLongLongMap.newBuilder()
                     .withBuckets(16)
                     .withInitialCapacity(NUM_VALUES)
                     .withMode(PrimitiveMapBuilder.MapMode.BUSY_WAITING)
                     .withLoadFactor(0.8f)
                     .build();
         } else {
-            map = LongLongMap.newBuilder()
+            map = ConcurrentLongLongMap.newBuilder()
                     .withBuckets(16)
                     .withInitialCapacity(NUM_VALUES)
                     .withLoadFactor(0.8f)

@@ -1,22 +1,20 @@
 package com.trivago.fastutilconcurrentwrapper.longlong;
 
 import com.trivago.fastutilconcurrentwrapper.AbstractMapTest;
-import com.trivago.fastutilconcurrentwrapper.LongLongMap;
+import com.trivago.fastutilconcurrentwrapper.map.ConcurrentLongLongMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 abstract class AbstractLongLongMapTest extends AbstractMapTest {
-  private LongLongMap map;
+  private ConcurrentLongLongMap map;
   // Keep the default value to easily verify that this value is returned.
   protected long defaultValue;
   // Some methods return the default value of the underlying Fastutil implementation.
   private static final long FASTUTIL_DEFAULT_VALUE = 0L;
 
-  abstract LongLongMap createMap();
+  abstract ConcurrentLongLongMap createMap ();
 
   @BeforeEach
   void initializeMap() {
@@ -24,7 +22,7 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     map = createMap();
   }
 
-  @Test
+	@Test  @Override
   protected void containsKeyReturnsFalseIfMapIsEmpty() {
     final long key = nextLong();
 
@@ -33,7 +31,7 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     assertFalse(contains);
   }
 
-  @Test
+  @Test  @Override
   protected void containsKeyReturnsTrueIfKeyExists() {
     long key = nextLong();
     long value = nextLong();
@@ -44,7 +42,7 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     assertTrue(contains);
   }
 
-  @Test
+  @Test  @Override
   protected void containsKeyReturnsFalseIfKeyWasRemoved() {
     long key = nextLong();
     long value = nextLong();
@@ -56,14 +54,14 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     assertFalse(contains);
   }
 
-  @Test
+  @Test  @Override
   protected void mapIsEmptyWhenNothingWasInserted() {
     final boolean empty = map.isEmpty();
 
     assertTrue(empty);
   }
 
-  @Test
+  @Test  @Override
   protected void mapIsEmptyWhenAllKeysAreDeleted() {
     int entryCount = (Math.abs(nextInt()) % 100) + 1;
     long value = nextLong();
@@ -80,7 +78,7 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     assertTrue(empty);
   }
 
-  @Test
+  @Test  @Override
   protected void sizeIsCorrect() {
     int entries = (Math.abs(nextInt()) % 50) + 1;
     long value = nextLong();
@@ -94,7 +92,7 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     assertEquals(entries, size);
   }
 
-  @Test
+  @Test  @Override
   protected void gettingExistingValueReturnsCorrectValue() {
     long key = nextLong();
     long value = nextLong();
@@ -104,7 +102,7 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     assertEquals(value, returnedValue);
   }
 
-  @Test
+  @Test  @Override
   protected void gettingNonExistingValueReturnsCorrectValue() {
     long key = nextLong();
     final long returnedValue = map.get(key);
@@ -112,7 +110,7 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     assertEquals(defaultValue, returnedValue);
   }
 
-  @Test
+  @Test  @Override
   protected void removingNonExistingKeyReturnsDefaultValue() {
     long key = nextLong();
     final long removedValue = map.remove(key);
@@ -120,7 +118,7 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     assertEquals(FASTUTIL_DEFAULT_VALUE, removedValue);
   }
 
-  @Test
+  @Test  @Override
   protected void removingExistingKeyReturnsPreviousValue() {
     long key = nextLong();
     long value = nextLong();
@@ -130,7 +128,7 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     assertEquals(value, removedValue);
   }
 
-  @Test
+  @Test  @Override
   protected void removingWithValueWhenKeyDoesNotExistReturnsFalse() {
     long key = nextLong();
     long value = nextLong();
@@ -139,7 +137,7 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     assertFalse(result);
   }
 
-  @Test
+  @Test  @Override
   protected void removingWithValueWhenValueIsDifferentReturnsFalse() {
     long key = nextLong();
     long value = nextLong();
@@ -149,7 +147,7 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     assertFalse(result);
   }
 
-  @Test
+  @Test  @Override
   protected void removingWithValueWhenValueIsSameReturnsTrue() {
     long key = nextLong();
     long value = nextLong();
@@ -159,7 +157,7 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     assertTrue(result);
   }
 
-  @Test
+  @Test  @Override
   protected void puttingValueIfAbsentReturnsSameValue() {
     long key = nextLong();
     long value = nextLong();
@@ -170,7 +168,7 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     assertEquals(result, value);
   }
 
-  @Test
+  @Test  @Override
   protected void checkingValueIfNotAbsentReturnsSameValue() {
     long key = nextLong();
     long value = nextLong();
@@ -183,7 +181,7 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     assertEquals(value, returned);
   }
 
-  @Test
+  @Test  @Override
   protected void replacingValueIfPresentReturnsNewValue() {
     long key = nextLong();
     long value = nextLong();
@@ -196,7 +194,7 @@ abstract class AbstractLongLongMapTest extends AbstractMapTest {
     assertEquals(result, key + value);
   }
 
-  @Test
+  @Test  @Override
   protected void checkingValueIfNotPresentReturnsDefaultValue() {
     long key = nextLong();
     map.computeIfPresent(key, Long::sum);
