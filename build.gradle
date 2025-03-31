@@ -1,8 +1,9 @@
 plugins {
     id "idea"
     id "java-library"
-    id "me.champeau.jmh" version "0.6.6"
-    id "com.vanniktech.maven.publish" version "0.18.0"
+    id "me.champeau.jmh" version "latest.release"
+    id "com.vanniktech.maven.publish" version "latest.release"
+    id "net.ltgt.errorprone" version "latest.release"
 }
 
 allprojects {
@@ -21,14 +22,14 @@ tasks.withType(JavaCompile).configureEach { // ? gradle.projectsEvaluated {
     options.release.set(17)
     options.deprecation = true
 
-//    options.errorprone {
-//        enabled = true // <<<!!! You can disable Error-Prone here!
-//        disableWarningsInGeneratedCode = true
-//        excludedPaths = ".*/build/(generated|test).*/.*"
-//        disable("UnusedVariable")
-//        disable("MissingSummary")
-//        errorproneArgs = ["-XepExcludedPaths:.*/test/.*"]
-//    }
+    options.errorprone {
+        enabled = true // <<<!!! You can disable Error-Prone here!
+        disableWarningsInGeneratedCode = true
+        excludedPaths = ".*/build/(generated|test).*/.*"
+        disable("UnusedVariable")
+        disable("MissingSummary")
+        errorproneArgs = ["-XepExcludedPaths:.*/test/.*"]
+    }
 }
 
 mavenPublishing {
@@ -77,6 +78,7 @@ sourceSets {
 }
 
 dependencies {
+    errorprone("com.google.errorprone:error_prone_core:2.36.0")
     api group: 'it.unimi.dsi', name: 'fastutil', version: 'latest.release'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.+'
@@ -90,6 +92,11 @@ test {
 jar {
     archiveBaseName.set('fastutil-concurrent-wrapper')
 }
+
+java {
+    withSourcesJar()
+}
+
 
 // ./gradlew publish --no-daemon --no-parallel
 // ./gradlew closeAndReleaseRepository
@@ -108,3 +115,9 @@ jmh {
     jvmArgs = ["-Xms3072m","-Xmx3072m"]
     duplicateClassesStrategy = DuplicatesStrategy.EXCLUDE
 }
+
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+println "[INFO] ${project.group}:${project.name}:$version  ⇒  ${tasks.jar.archiveFileName.get()} # JVM: ${System.getProperty("java.version")}  Gradle: ${gradle.gradleVersion}"
