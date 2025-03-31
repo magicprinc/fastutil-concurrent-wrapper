@@ -11,14 +11,14 @@ public class ConcurrentLongIntMapBuilderTest {
 
     @Test
     public void buildsBusyWaitingMap() {
-        var b = LongIntMap.newBuilder()
+        var b = ConcurrentLongIntMap.newBuilder()
                 .withBuckets(2)
                 .withDefaultValue(DEFAULT_VALUE)
                 .withInitialCapacity(100)
                 .withMode(PrimitiveMapBuilder.MapMode.BUSY_WAITING)
                 .withLoadFactor(0.9f);
 
-        LongIntMap map = b.build();
+        ConcurrentLongIntMap map = b.build();
 
         map.put(1L, 10);
         int v = map.get(1L);
@@ -30,14 +30,14 @@ public class ConcurrentLongIntMapBuilderTest {
 
     @Test
     public void buildsBlockingMap() {
-        var b = LongIntMap.newBuilder()
+        var b = ConcurrentLongIntMap.newBuilder()
                 .withBuckets(2)
                 .withDefaultValue(DEFAULT_VALUE)
                 .withInitialCapacity(100)
                 .withMode(PrimitiveMapBuilder.MapMode.BLOCKING)
                 .withLoadFactor(0.9f);
 
-        LongIntMap map = b.build();
+        ConcurrentLongIntMap map = b.build();
 
         map.put(1L, 10);
         long v = map.get(1L);
