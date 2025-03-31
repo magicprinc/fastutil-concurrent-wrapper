@@ -63,9 +63,9 @@ mavenPublishing {
             }
         }
         scm {
-            url = "https://github.com/trivago/fastutil-concurrent-wrapper"
-            connection = "scm:git:https://github.com/trivago/fastutil-concurrent-wrapper"
-            developerConnection = "scm:git:https://github.com/trivago/fastutil-concurrent-wrapper"
+            url = "https://github.com/magicprinc/fastutil-concurrent-wrapper"
+            connection = "scm:git:https://github.com/magicprinc/fastutil-concurrent-wrapper"
+            developerConnection = "scm:git:https://github.com/magicprinc/fastutil-concurrent-wrapper"
         }
     }
 }
