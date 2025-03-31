@@ -1,13 +1,14 @@
 package com.trivago.fastutilconcurrentwrapper.map;
 
 import com.trivago.fastutilconcurrentwrapper.LongLongMap;
+import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.longs.Long2LongFunction;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
-public class ConcurrentBusyWaitingLongLongMap extends PrimitiveConcurrentMap implements LongLongMap {
+public class ConcurrentBusyWaitingLongLongMap extends PrimitiveConcurrentMap<Long,Long> implements LongLongMap {
     private final Long2LongOpenHashMap[] maps;
     private final long defaultValue;
 
@@ -25,8 +26,8 @@ public class ConcurrentBusyWaitingLongLongMap extends PrimitiveConcurrentMap imp
     }
 
     @Override
-    protected int sizeOfMap (int index) {
-        return maps[index].size();
+    protected Function<Long,Long> mapAt (int index) {
+        return maps[index];
     }
 
     @Override

@@ -1,13 +1,14 @@
 package com.trivago.fastutilconcurrentwrapper.map;
 
 import com.trivago.fastutilconcurrentwrapper.IntIntMap;
+import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
-public class ConcurrentBusyWaitingIntIntMap extends PrimitiveConcurrentMap implements IntIntMap {
+public class ConcurrentBusyWaitingIntIntMap extends PrimitiveConcurrentMap<Integer,Integer> implements IntIntMap {
     private final Int2IntOpenHashMap[] maps;
     private final int defaultValue;
 
@@ -25,8 +26,8 @@ public class ConcurrentBusyWaitingIntIntMap extends PrimitiveConcurrentMap imple
     }
 
     @Override
-    protected int sizeOfMap (int index) {
-        return maps[index].size();
+    protected Function<Integer,Integer> mapAt (int index) {
+        return maps[index];
     }
 
     @Override

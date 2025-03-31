@@ -1,13 +1,14 @@
 package com.trivago.fastutilconcurrentwrapper.map;
 
 import com.trivago.fastutilconcurrentwrapper.PrimitiveKeyMap;
+import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.HashCommon;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public abstract class PrimitiveConcurrentMap implements PrimitiveKeyMap {
+public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
     protected final int numBuckets;
     protected final ReadWriteLock[] locks;
 
@@ -18,6 +19,8 @@ public abstract class PrimitiveConcurrentMap implements PrimitiveKeyMap {
             locks[i] = new ReentrantReadWriteLock();
     }
 
+    protected abstract Function<K,V> mapAt (int index);
+
     @Override
 		public int size () {
         int sum = 0;
@@ -25,7 +28,7 @@ public abstract class PrimitiveConcurrentMap implements PrimitiveKeyMap {
             Lock readLock = locks[i].readLock();
             readLock.lock();
             try {
-                sum += sizeOfMap(i);
+                sum += mapAt(i).size();
             } finally {
                 readLock.unlock();
             }
@@ -33,15 +36,13 @@ public abstract class PrimitiveConcurrentMap implements PrimitiveKeyMap {
         return sum;
     }
 
-    protected abstract int sizeOfMap (int index);
-
     @Override
 		public boolean isEmpty () {
         for (int i = 0; i < numBuckets; i++) {
             Lock readLock = locks[i].readLock();
             readLock.lock();
             try {
-                boolean nonEmpty = sizeOfMap(i) > 0;
+                boolean nonEmpty = mapAt(i).size() > 0;
                 if (nonEmpty)
                     return false;
             } finally {
@@ -49,6 +50,19 @@ public abstract class PrimitiveConcurrentMap implements PrimitiveKeyMap {
             }
         }
         return true;// all sub-maps are empty
+    }
+
+    @Override
+    public void clear () {
+        for (int i = 0; i < numBuckets; i++) {
+            Lock readLock = locks[i].readLock();
+            readLock.lock();
+            try {
+                mapAt(i).clear();
+            } finally {
+                readLock.unlock();
+            }
+        }
     }
 
     protected int getBucket(long key) {
