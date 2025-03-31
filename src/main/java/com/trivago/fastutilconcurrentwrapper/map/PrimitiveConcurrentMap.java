@@ -23,6 +23,7 @@ public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
             locks[i] = new ReentrantReadWriteLock();
     }
 
+    /** Lock must be held! */
     protected abstract Function<K,V> mapAt (int index);
 
     @Override
@@ -59,12 +60,12 @@ public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
     @Override
     public void clear () {
         for (int i = 0; i < numBuckets; i++) {
-            Lock readLock = locks[i].readLock();
-            readLock.lock();
+            Lock lock = locks[i].writeLock();
+            lock.lock();
             try {
                 mapAt(i).clear();
             } finally {
-                readLock.unlock();
+                lock.unlock();
             }
         }
     }
