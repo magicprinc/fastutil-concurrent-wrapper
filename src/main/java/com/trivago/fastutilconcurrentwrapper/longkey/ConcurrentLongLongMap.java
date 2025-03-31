@@ -1,6 +1,7 @@
-package com.trivago.fastutilconcurrentwrapper.map;
+package com.trivago.fastutilconcurrentwrapper.longkey;
 
-import com.trivago.fastutilconcurrentwrapper.LongLongMap;
+import com.trivago.fastutilconcurrentwrapper.PrimitiveConcurrentMap;
+import com.trivago.fastutilconcurrentwrapper.PrimitiveMapBuilder;
 import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.longs.Long2LongFunction;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
@@ -8,9 +9,9 @@ import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
-public class ConcurrentLongLongMap extends PrimitiveConcurrentMap<Long,Long> implements LongLongMap {
-    private final Long2LongOpenHashMap[] maps;
-    private final long defaultValue;
+public class ConcurrentLongLongMap extends PrimitiveConcurrentMap<Long,Long> {
+    protected final Long2LongOpenHashMap[] maps;
+    protected final long defaultValue;
 
     public ConcurrentLongLongMap(
         int numBuckets,
@@ -26,11 +27,10 @@ public class ConcurrentLongLongMap extends PrimitiveConcurrentMap<Long,Long> imp
     }
 
     @Override
-    protected Function<Long,Long> mapAt (int index) {
+    protected final Function<Long,Long> mapAt (int index) {
         return maps[index];
     }
 
-    @Override
     public boolean containsKey(long key) {
         int bucket = getBucket(key);
 
@@ -43,7 +43,6 @@ public class ConcurrentLongLongMap extends PrimitiveConcurrentMap<Long,Long> imp
         }
     }
 
-    @Override
     public long get (long key) {
         int bucket = getBucket(key);
 
@@ -56,7 +55,6 @@ public class ConcurrentLongLongMap extends PrimitiveConcurrentMap<Long,Long> imp
         }
     }
 
-    @Override
     public long put(long key, long value) {
         int bucket = getBucket(key);
 
@@ -69,9 +67,8 @@ public class ConcurrentLongLongMap extends PrimitiveConcurrentMap<Long,Long> imp
         }
     }
 
-    @Override public long getDefaultValue (){ return defaultValue; }
+    public long getDefaultValue (){ return defaultValue; }
 
-    @Override
     public long remove(long key) {
         int bucket = getBucket(key);
 
@@ -84,7 +81,6 @@ public class ConcurrentLongLongMap extends PrimitiveConcurrentMap<Long,Long> imp
         }
     }
 
-    @Override
     public boolean remove(long key, long value) {
         int bucket = getBucket(key);
 
@@ -97,7 +93,6 @@ public class ConcurrentLongLongMap extends PrimitiveConcurrentMap<Long,Long> imp
         }
     }
 
-    @Override
     public long computeIfAbsent(long key, Long2LongFunction mappingFunction) {
         int bucket = getBucket(key);
 
@@ -110,7 +105,6 @@ public class ConcurrentLongLongMap extends PrimitiveConcurrentMap<Long,Long> imp
         }
     }
 
-    @Override
     public long computeIfPresent(long key, BiFunction<Long, Long, Long> mappingFunction) {
         int bucket = getBucket(key);
 
@@ -121,5 +115,18 @@ public class ConcurrentLongLongMap extends PrimitiveConcurrentMap<Long,Long> imp
         } finally {
             writeLock.unlock();
         }
+    }
+
+    public static PrimitiveMapBuilder<ConcurrentLongLongMap,Long> newBuilder () {
+        return new PrimitiveMapBuilder<>(){
+            @Override
+            public ConcurrentLongLongMap build() {
+                long def = super.defaultValue != null ? super.defaultValue : 0;
+                return switch (mapMode){
+                    case BUSY_WAITING -> new ConcurrentBusyWaitingLongLongMap(buckets, initialCapacity, loadFactor, def);
+                    case BLOCKING -> new ConcurrentLongLongMap(buckets, initialCapacity, loadFactor, def);
+                };
+            }
+        };
     }
 }

@@ -1,37 +1,39 @@
-package com.trivago.fastutilconcurrentwrapper.map;
+package com.trivago.fastutilconcurrentwrapper.longkey;
 
-import com.trivago.fastutilconcurrentwrapper.IntIntMap;
+import com.trivago.fastutilconcurrentwrapper.PrimitiveConcurrentMap;
+import com.trivago.fastutilconcurrentwrapper.PrimitiveMapBuilder;
 import it.unimi.dsi.fastutil.Function;
-import it.unimi.dsi.fastutil.ints.Int2IntFunction;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2FloatFunction;
+import it.unimi.dsi.fastutil.longs.Long2FloatOpenHashMap;
 
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
-public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer> implements IntIntMap {
-    private final Int2IntOpenHashMap[] maps;
-    private final int defaultValue;
+public class ConcurrentLongFloatMap extends PrimitiveConcurrentMap<Long,Float> {
+    protected final Long2FloatOpenHashMap[] maps;
+    protected final float defaultValue;
 
-    public ConcurrentIntIntMap(
+    public ConcurrentLongFloatMap (
         int numBuckets,
         int initialCapacity,
         float loadFactor,
-        int defaultValue
+        float defaultValue
     ){
         super(numBuckets);
-        this.maps = new Int2IntOpenHashMap[numBuckets];
+        this.maps = new Long2FloatOpenHashMap[numBuckets];
         this.defaultValue = defaultValue;
         for (int i = 0; i < numBuckets; i++)
-            maps[i] = new Int2IntOpenHashMap(initialCapacity, loadFactor);
+            maps[i] = new Long2FloatOpenHashMap(initialCapacity, loadFactor);
     }
 
+    public float getDefaultValue (){ return defaultValue; }
+
     @Override
-    protected Function<Integer,Integer> mapAt (int index) {
+    protected Function<Long,Float> mapAt (int index) {
         return maps[index];
     }
 
-    @Override
-    public boolean containsKey(int key) {
+    public boolean containsKey(long key) {
         int bucket = getBucket(key);
 
         Lock readLock = locks[bucket].readLock();
@@ -43,8 +45,7 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer>
         }
     }
 
-    @Override
-    public int get (int key) {
+    public float get(long key) {
         int bucket = getBucket(key);
 
         Lock readLock = locks[bucket].readLock();
@@ -56,8 +57,7 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer>
         }
     }
 
-    @Override
-    public int put(int key, int value) {
+    public float put(long key, float value) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -69,10 +69,7 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer>
         }
     }
 
-    @Override public int getDefaultValue (){ return defaultValue; }
-
-    @Override
-    public int remove(int key) {
+    public float remove(long key) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -84,8 +81,7 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer>
         }
     }
 
-    @Override
-    public boolean remove(int key, int value) {
+    public boolean remove(long key, float value) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -97,8 +93,7 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer>
         }
     }
 
-    @Override
-    public int computeIfAbsent(int key, Int2IntFunction mappingFunction) {
+    public float computeIfAbsent(long key, Long2FloatFunction mappingFunction) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -110,8 +105,7 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer>
         }
     }
 
-    @Override
-    public int computeIfPresent(int key, BiFunction<Integer, Integer, Integer> mappingFunction) {
+    public float computeIfPresent(int key, BiFunction<Long, Float, Float> mappingFunction) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -121,5 +115,18 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer>
         } finally {
             writeLock.unlock();
         }
+    }
+
+    public static PrimitiveMapBuilder<ConcurrentLongFloatMap,Float> newBuilder () {
+        return new PrimitiveMapBuilder<>(){
+            @Override
+            public ConcurrentLongFloatMap build () {
+                float def = super.defaultValue != null ? super.defaultValue : 0;
+                return switch (mapMode){
+                    case BUSY_WAITING -> new ConcurrentBusyWaitingLongFloatMap(buckets, initialCapacity, loadFactor, def);
+                    case BLOCKING -> new ConcurrentLongFloatMap(buckets, initialCapacity, loadFactor, def);
+                };
+            }
+        };
     }
 }

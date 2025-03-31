@@ -1,0 +1,5 @@
+jdk:
+  - openjdk17
+
+install:
+  - gradle clean build publishToMavenLocal --console=plain --continue --warning-mode all

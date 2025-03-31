@@ -1,23 +1,19 @@
 package com.trivago.fastutilconcurrentwrapper.longint;
 
 import com.trivago.fastutilconcurrentwrapper.AbstractMapTest;
-import com.trivago.fastutilconcurrentwrapper.LongIntMap;
+import com.trivago.fastutilconcurrentwrapper.longkey.ConcurrentLongIntMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 abstract class AbstractLongIntMapTest extends AbstractMapTest {
     // Some methods return the default value of the underlying Fastutil implementation.
     private static final int FASTUTIL_DEFAULT_VALUE = 0;
-
     protected int defaultValue;
-    private LongIntMap map;
+    private ConcurrentLongIntMap map;
     // Keep the default value to easily verify that this value is returned.
-
-    abstract LongIntMap createMap();
+    abstract ConcurrentLongIntMap createMap ();
 
     @BeforeEach
     void initializeMap() {

@@ -1,12 +1,10 @@
 package com.trivago.fastutilconcurrentwrapper.longlong;
 
-import com.trivago.fastutilconcurrentwrapper.LongLongMap;
-import com.trivago.fastutilconcurrentwrapper.map.ConcurrentLongLongMap;
+import com.trivago.fastutilconcurrentwrapper.longkey.ConcurrentLongLongMap;
 
 public class PrimitiveFastutilLongLongWrapperTest extends AbstractLongLongMapTest {
-
   @Override
-  LongLongMap createMap() {
+  ConcurrentLongLongMap createMap() {
     return new ConcurrentLongLongMap(1, 5, 0.9F, defaultValue);
   }
 }

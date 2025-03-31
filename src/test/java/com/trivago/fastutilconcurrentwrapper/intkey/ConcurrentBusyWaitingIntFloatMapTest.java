@@ -1,6 +1,5 @@
-package com.trivago.fastutilconcurrentwrapper.map;
+package com.trivago.fastutilconcurrentwrapper.intkey;
 
-import com.trivago.fastutilconcurrentwrapper.IntFloatMap;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -10,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConcurrentBusyWaitingIntFloatMapTest {
 	@Test
 	void basic () {
-		for (var m : new IntFloatMap[]{new ConcurrentBusyWaitingIntFloatMap(10, 11, 0.5f, -1), new ConcurrentIntFloatMap(10, 11, 0.5f, -1)}){
+		for (var m : new ConcurrentIntFloatMap[]{new ConcurrentBusyWaitingIntFloatMap(10, 11, 0.5f, -1), new ConcurrentIntFloatMap(10, 11, 0.5f, -1)}){
 			assertEquals(-1.0f, m.getDefaultValue());
 			assertEquals(0, m.size());
 			assertFalse(m.containsKey(42));

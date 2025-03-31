@@ -1,7 +1,7 @@
 package com.trivago.fastutilconcurrentwrapper;
 
-import com.trivago.fastutilconcurrentwrapper.map.ConcurrentBusyWaitingLongLongMap;
-import com.trivago.fastutilconcurrentwrapper.map.ConcurrentLongLongMap;
+import com.trivago.fastutilconcurrentwrapper.longkey.ConcurrentBusyWaitingLongLongMap;
+import com.trivago.fastutilconcurrentwrapper.longkey.ConcurrentLongLongMap;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -11,14 +11,14 @@ public class ConcurrentLongLongMapBuilderTest {
 
     @Test
     public void simpleBuilderTest() {
-        var b = LongLongMap.newBuilder()
+        var b = ConcurrentLongLongMap.newBuilder()
                 .withBuckets(2)
                 .withDefaultValue(DEFAULT_VALUE)
                 .withInitialCapacity(100)
                 .withMode(PrimitiveMapBuilder.MapMode.BUSY_WAITING)
                 .withLoadFactor(0.9f);
 
-        LongLongMap map = b.build();
+        var map = (ConcurrentBusyWaitingLongLongMap) b.build();
 
         map.put(1L, 10L);
         long v = map.get(1L);
@@ -30,14 +30,14 @@ public class ConcurrentLongLongMapBuilderTest {
 
     @Test
     public void buildsBlockingMap() {
-        var b = LongLongMap.newBuilder()
+        var b = ConcurrentLongLongMap.newBuilder()
                 .withBuckets(2)
                 .withDefaultValue(DEFAULT_VALUE)
                 .withInitialCapacity(100)
                 .withMode(PrimitiveMapBuilder.MapMode.BLOCKING)
                 .withLoadFactor(0.9f);
 
-        LongLongMap map = b.build();
+        ConcurrentLongLongMap map = b.build();
 
         map.put(1L, 10L);
         long v = map.get(1L);

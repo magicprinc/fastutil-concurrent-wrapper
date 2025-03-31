@@ -1,9 +1,9 @@
 plugins {
     id "idea"
     id "java-library"
-    id "me.champeau.jmh" version "latest.release"
+//    id "net.ltgt.errorprone" version "latest.release"
+    id("me.champeau.jmh") version "latest.release"
     id "com.vanniktech.maven.publish" version "latest.release"
-    id "net.ltgt.errorprone" version "latest.release"
 }
 
 allprojects {
@@ -22,14 +22,14 @@ tasks.withType(JavaCompile).configureEach { // ? gradle.projectsEvaluated {
     options.release.set(17)
     options.deprecation = true
 
-    options.errorprone {
-        enabled = true // <<<!!! You can disable Error-Prone here!
-        disableWarningsInGeneratedCode = true
-        excludedPaths = ".*/build/(generated|test).*/.*"
-        disable("UnusedVariable")
-        disable("MissingSummary")
-        errorproneArgs = ["-XepExcludedPaths:.*/test/.*"]
-    }
+//    options.errorprone {
+//        enabled = true // <<<!!! You can disable Error-Prone here!
+//        disableWarningsInGeneratedCode = true
+//        excludedPaths = ".*/build/(generated|test).*/.*"
+//        disable("UnusedVariable")
+//        disable("MissingSummary")
+//        errorproneArgs = ["-XepExcludedPaths:.*/test/.*"]
+//    }
 }
 
 mavenPublishing {
@@ -78,11 +78,14 @@ sourceSets {
 }
 
 dependencies {
-    errorprone("com.google.errorprone:error_prone_core:2.36.0")
+//    errorprone("com.google.errorprone:error_prone_core:2.36.0")
+//    jmhAnnotationProcessor "com.google.errorprone:error_prone_core:2.36.0"
+
     api group: 'it.unimi.dsi', name: 'fastutil', version: 'latest.release'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.+'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.+'
+    testImplementation 'org.junit.vintage:junit-vintage-engine:5.11.+'
 }
 
 test {
@@ -96,7 +99,6 @@ jar {
 java {
     withSourcesJar()
 }
-
 
 // ./gradlew publish --no-daemon --no-parallel
 // ./gradlew closeAndReleaseRepository
@@ -113,7 +115,7 @@ publishing {
 // ./gradlew jmh
 jmh {
     jvmArgs = ["-Xms3072m","-Xmx3072m"]
-    duplicateClassesStrategy = DuplicatesStrategy.EXCLUDE
+    duplicateClassesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 tasks.withType(AbstractArchiveTask).configureEach {

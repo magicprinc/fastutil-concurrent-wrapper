@@ -1,37 +1,17 @@
-package com.trivago.fastutilconcurrentwrapper.map;
+package com.trivago.fastutilconcurrentwrapper.objkey;
 
-import com.trivago.fastutilconcurrentwrapper.LongIntMap;
-import it.unimi.dsi.fastutil.Function;
-import it.unimi.dsi.fastutil.longs.Long2IntFunction;
-import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2LongFunction;
 
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
-public class ConcurrentBusyWaitingLongIntMap extends PrimitiveConcurrentMap<Long,Integer> implements LongIntMap {
-    private final Long2IntOpenHashMap[] maps;
-    private final int defaultValue;
-
-    public ConcurrentBusyWaitingLongIntMap(
-        int numBuckets,
-        int initialCapacity,
-        float loadFactor,
-        int defaultValue
-    ){
-        super(numBuckets);
-        this.maps = new Long2IntOpenHashMap[numBuckets];
-        this.defaultValue = defaultValue;
-        for (int i = 0; i < numBuckets; i++)
-            maps[i] = new Long2IntOpenHashMap(initialCapacity, loadFactor);
+public class ConcurrentBusyWaitingObjectLongMap<K> extends ConcurrentObjectLongMap<K> {
+    public ConcurrentBusyWaitingObjectLongMap (int numBuckets, int initialCapacity, float loadFactor, long defaultValue) {
+        super(numBuckets, initialCapacity, loadFactor, defaultValue);
     }
 
     @Override
-    protected Function<Long,Integer> mapAt (int index) {
-        return maps[index];
-    }
-
-    @Override
-    public boolean containsKey(long key) {
+    public boolean containsKey (K key) {
         int bucket = getBucket(key);
 
         Lock readLock = locks[bucket].readLock();
@@ -49,7 +29,7 @@ public class ConcurrentBusyWaitingLongIntMap extends PrimitiveConcurrentMap<Long
     }
 
     @Override
-    public int get(long key) {
+    public long get (K key) {
         int bucket = getBucket(key);
 
         Lock readLock = locks[bucket].readLock();
@@ -67,7 +47,7 @@ public class ConcurrentBusyWaitingLongIntMap extends PrimitiveConcurrentMap<Long
     }
 
     @Override
-    public int put(long key, int value) {
+    public long put (K key, long value) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -84,10 +64,8 @@ public class ConcurrentBusyWaitingLongIntMap extends PrimitiveConcurrentMap<Long
         }
     }
 
-    @Override public int getDefaultValue (){ return defaultValue; }
-
     @Override
-    public int remove(long key) {
+    public long remove (K key) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -95,7 +73,7 @@ public class ConcurrentBusyWaitingLongIntMap extends PrimitiveConcurrentMap<Long
         while (true) {
             if (writeLock.tryLock()) {
                 try {
-                    return maps[bucket].remove(key);
+                    return maps[bucket].removeLong(key);
                 } finally {
                     writeLock.unlock();
                 }
@@ -105,7 +83,7 @@ public class ConcurrentBusyWaitingLongIntMap extends PrimitiveConcurrentMap<Long
     }
 
     @Override
-    public boolean remove(long key, int value) {
+    public boolean remove (K key, long value) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -123,7 +101,7 @@ public class ConcurrentBusyWaitingLongIntMap extends PrimitiveConcurrentMap<Long
     }
 
     @Override
-    public int computeIfAbsent(long key, Long2IntFunction mappingFunction) {
+    public long computeIfAbsent (K key, Object2LongFunction<K> mappingFunction) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();
@@ -141,7 +119,7 @@ public class ConcurrentBusyWaitingLongIntMap extends PrimitiveConcurrentMap<Long
     }
 
     @Override
-    public int computeIfPresent(long key, BiFunction<Long, Integer, Integer> mappingFunction) {
+    public long computeIfPresent (K key, BiFunction<K,Long,Long> mappingFunction) {
         int bucket = getBucket(key);
 
         Lock writeLock = locks[bucket].writeLock();

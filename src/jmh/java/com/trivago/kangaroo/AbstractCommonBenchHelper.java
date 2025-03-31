@@ -8,7 +8,7 @@ import org.openjdk.jmh.annotations.Threads;
 
 import java.util.concurrent.TimeUnit;
 
-abstract public class AbstractCommonBenchHelper {
+public abstract class AbstractCommonBenchHelper {
     @Threads(4)
     @Benchmark
     @BenchmarkMode(Mode.Throughput)
@@ -54,9 +54,9 @@ abstract public class AbstractCommonBenchHelper {
         testAllOps();
     }
 
-    abstract public void testGet();
+    public abstract void testGet();
 
-    abstract public void testPut();
+    public abstract void testPut();
 
-    abstract public void testAllOps();
+    public abstract void testAllOps();
 }
