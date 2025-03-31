@@ -2,6 +2,7 @@
 
 [![Java CI](https://github.com/magicprinc/fastutil-concurrent-wrapper/actions/workflows/gradle.yml/badge.svg)](https://github.com/magicprinc/fastutil-concurrent-wrapper/actions/workflows/gradle.yml)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.trivago/fastutil-concurrent-wrapper/badge.svg?style=plastic)](https://maven-badges.herokuapp.com/maven-central/com.trivago/fastutil-concurrent-wrapper/)
+[![](https://jitpack.io/v/magicprinc/fastutil-concurrent-wrapper.svg)](https://jitpack.io/#magicprinc/fastutil-concurrent-wrapper)
 
 ## Description
 
