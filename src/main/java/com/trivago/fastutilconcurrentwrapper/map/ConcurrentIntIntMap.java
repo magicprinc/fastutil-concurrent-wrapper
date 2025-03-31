@@ -1,6 +1,6 @@
 package com.trivago.fastutilconcurrentwrapper.map;
 
-import com.trivago.fastutilconcurrentwrapper.IntIntMap;
+import com.trivago.fastutilconcurrentwrapper.PrimitiveMapBuilder;
 import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
@@ -8,9 +8,9 @@ import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
-public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer> implements IntIntMap {
-    private final Int2IntOpenHashMap[] maps;
-    private final int defaultValue;
+public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer> {
+    protected final Int2IntOpenHashMap[] maps;
+    protected final int defaultValue;
 
     public ConcurrentIntIntMap(
         int numBuckets,
@@ -30,7 +30,6 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer>
         return maps[index];
     }
 
-    @Override
     public boolean containsKey(int key) {
         int bucket = getBucket(key);
 
@@ -43,7 +42,6 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer>
         }
     }
 
-    @Override
     public int get (int key) {
         int bucket = getBucket(key);
 
@@ -56,7 +54,6 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer>
         }
     }
 
-    @Override
     public int put(int key, int value) {
         int bucket = getBucket(key);
 
@@ -69,9 +66,8 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer>
         }
     }
 
-    @Override public int getDefaultValue (){ return defaultValue; }
+    public int getDefaultValue (){ return defaultValue; }
 
-    @Override
     public int remove(int key) {
         int bucket = getBucket(key);
 
@@ -84,7 +80,6 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer>
         }
     }
 
-    @Override
     public boolean remove(int key, int value) {
         int bucket = getBucket(key);
 
@@ -97,7 +92,6 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer>
         }
     }
 
-    @Override
     public int computeIfAbsent(int key, Int2IntFunction mappingFunction) {
         int bucket = getBucket(key);
 
@@ -110,7 +104,6 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer>
         }
     }
 
-    @Override
     public int computeIfPresent(int key, BiFunction<Integer, Integer, Integer> mappingFunction) {
         int bucket = getBucket(key);
 
@@ -121,5 +114,18 @@ public class ConcurrentIntIntMap extends PrimitiveConcurrentMap<Integer,Integer>
         } finally {
             writeLock.unlock();
         }
+    }
+
+    public static PrimitiveMapBuilder<ConcurrentIntIntMap,Integer> newBuilder () {
+        return new PrimitiveMapBuilder<>(){
+            @Override
+            public ConcurrentIntIntMap build () {
+                int def = super.defaultValue != null ? super.defaultValue : 0;
+                return switch (mapMode){
+                    case BUSY_WAITING -> new ConcurrentBusyWaitingIntIntMap(buckets, initialCapacity, loadFactor, def);
+                    case BLOCKING -> new ConcurrentIntIntMap(buckets, initialCapacity, loadFactor, def);
+                };
+            }
+        };
     }
 }

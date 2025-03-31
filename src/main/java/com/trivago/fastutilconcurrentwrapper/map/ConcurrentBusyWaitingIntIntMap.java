@@ -1,33 +1,13 @@
 package com.trivago.fastutilconcurrentwrapper.map;
 
-import com.trivago.fastutilconcurrentwrapper.IntIntMap;
-import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
-public class ConcurrentBusyWaitingIntIntMap extends PrimitiveConcurrentMap<Integer,Integer> implements IntIntMap {
-    private final Int2IntOpenHashMap[] maps;
-    private final int defaultValue;
-
-    public ConcurrentBusyWaitingIntIntMap(
-        int numBuckets,
-        int initialCapacity,
-        float loadFactor,
-        int defaultValue
-    ){
-        super(numBuckets);
-        this.maps = new Int2IntOpenHashMap[numBuckets];
-        this.defaultValue = defaultValue;
-        for (int i = 0; i < numBuckets; i++)
-            maps[i] = new Int2IntOpenHashMap(initialCapacity, loadFactor);
-    }
-
-    @Override
-    protected Function<Integer,Integer> mapAt (int index) {
-        return maps[index];
+public class ConcurrentBusyWaitingIntIntMap extends ConcurrentIntIntMap {
+    public ConcurrentBusyWaitingIntIntMap (int numBuckets, int initialCapacity, float loadFactor, int defaultValue) {
+        super(numBuckets, initialCapacity, loadFactor, defaultValue);
     }
 
     @Override
@@ -83,8 +63,6 @@ public class ConcurrentBusyWaitingIntIntMap extends PrimitiveConcurrentMap<Integ
             Thread.onSpinWait();
         }
     }
-
-    @Override public int getDefaultValue (){ return defaultValue; }
 
     @Override
     public int remove(int key) {
