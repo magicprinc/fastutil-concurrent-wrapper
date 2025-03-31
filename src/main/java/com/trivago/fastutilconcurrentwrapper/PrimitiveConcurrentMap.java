@@ -10,6 +10,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  @see it.unimi.dsi.fastutil.Function
  @see com.google.common.util.concurrent.Striped
+ @see org.jctools.maps.NonBlockingHashMapLong
  */
 public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
     protected final int numBuckets;
