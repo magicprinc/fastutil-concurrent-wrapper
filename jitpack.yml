@@ -1,5 +1,8 @@
 jdk:
   - openjdk17
 
+gradle:
+  - version: 8.13
+
 install:
   - ./gradlew clean build publishToMavenLocal --console=plain --continue --warning-mode all
