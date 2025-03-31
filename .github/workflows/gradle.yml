@@ -21,5 +21,7 @@ jobs:
       with:
         java-version: '17'
         distribution: 'adopt'
+    - name: Change wrapper permissions
+      run: chmod +x ./gradlew
     - name: Clean and Build with Gradle
       run: ./gradlew clean build
