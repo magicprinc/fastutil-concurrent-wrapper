@@ -12,9 +12,8 @@ import org.openjdk.jmh.annotations.Warmup;
 @Warmup(iterations = 3, time = 1)
 @Measurement(iterations = 3, time = 2)
 public class FastutilWrapperBusyWaitingBenchmark extends AbstractBenchHelper {
-
     @Setup(Level.Trial)
     public void loadData() {
-        super.initAndLoadData(PrimitiveMapBuilder.MapMode.BUSY_WAITING);
+        initAndLoadData(PrimitiveMapBuilder.MapMode.BUSY_WAITING);
     }
 }

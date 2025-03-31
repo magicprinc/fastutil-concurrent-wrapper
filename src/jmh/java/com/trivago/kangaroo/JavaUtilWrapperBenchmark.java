@@ -12,11 +12,13 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ JDK Collections.synchronizedMap(Long2LongOpenHashMap)
+*/
 @State(Scope.Benchmark)
 @Warmup(iterations = 3, time = 1)
 @Measurement(iterations = 3, time = 2)
 public class JavaUtilWrapperBenchmark extends AbstractCommonBenchHelper {
-
     Map<Long, Long> map;
 
     @Setup(Level.Trial)
