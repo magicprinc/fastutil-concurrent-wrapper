@@ -1,6 +1,7 @@
-package com.trivago.kangaroo;
+package com.trivago.kangaroo.object2long;
 
-import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
+import com.trivago.kangaroo.AbstractCommonBenchHelper;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Scope;
@@ -15,15 +16,15 @@ import java.util.concurrent.ThreadLocalRandom;
 @State(Scope.Benchmark)
 @Warmup(iterations = 3, time = 1)
 @Measurement(iterations = 3, time = 2)
-public class JavaUtilWrapperBenchmark extends AbstractCommonBenchHelper {
+public class JavaUtilWrapperObjectLongBenchmark extends AbstractCommonBenchHelper {
 
-    Map<Long, Long> map;
+    Map<TestObjectKey, Long> map;
 
     @Setup(Level.Trial)
     public void loadData() {
-        Long2LongOpenHashMap m = new Long2LongOpenHashMap(AbstractBenchHelper.NUM_VALUES, 0.8f);
-        for (int i = 0; i < AbstractBenchHelper.NUM_VALUES; i++) {
-            long key = ThreadLocalRandom.current().nextLong();
+        Object2LongOpenHashMap<TestObjectKey> m = new Object2LongOpenHashMap<>(AbstractObjectLongBenchHelper.NUM_VALUES, 0.8f);
+        for (int i = 0; i < AbstractObjectLongBenchHelper.NUM_VALUES; i++) {
+            TestObjectKey key = new TestObjectKey();
             long value = ThreadLocalRandom.current().nextLong();
             m.put(key, value);
         }
@@ -32,13 +33,12 @@ public class JavaUtilWrapperBenchmark extends AbstractCommonBenchHelper {
 
     @Override
 		public void testGet() {
-        long key = ThreadLocalRandom.current().nextLong();
-        map.get(key);
+        map.get(new TestObjectKey());
     }
 
     @Override
 		public void testPut() {
-        long key = ThreadLocalRandom.current().nextLong();
+        TestObjectKey key = new TestObjectKey();
         long value = ThreadLocalRandom.current().nextLong();
         map.put(key, value);
     }
@@ -46,7 +46,7 @@ public class JavaUtilWrapperBenchmark extends AbstractCommonBenchHelper {
     @Override
 		public void testAllOps() {
         int op = ThreadLocalRandom.current().nextInt(3);
-        long key = ThreadLocalRandom.current().nextLong();
+        TestObjectKey key = new TestObjectKey();
         switch (op) {
             case 1:
                 long value = ThreadLocalRandom.current().nextLong();

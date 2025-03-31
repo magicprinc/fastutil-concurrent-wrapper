@@ -1,5 +1,6 @@
-package com.trivago.kangaroo;
+package com.trivago.kangaroo.long2long;
 
+import com.trivago.kangaroo.AbstractCommonBenchHelper;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
@@ -15,14 +16,14 @@ import java.util.concurrent.ThreadLocalRandom;
 @State(Scope.Benchmark)
 @Warmup(iterations = 3, time = 1)
 @Measurement(iterations = 3, time = 2)
-public class JavaUtilWrapperBenchmark extends AbstractCommonBenchHelper {
+public class JavaUtilWrapperLongLongBenchmark extends AbstractCommonBenchHelper {
 
     Map<Long, Long> map;
 
     @Setup(Level.Trial)
     public void loadData() {
-        Long2LongOpenHashMap m = new Long2LongOpenHashMap(AbstractBenchHelper.NUM_VALUES, 0.8f);
-        for (int i = 0; i < AbstractBenchHelper.NUM_VALUES; i++) {
+        Long2LongOpenHashMap m = new Long2LongOpenHashMap(AbstractLongLongBenchHelper.NUM_VALUES, 0.8f);
+        for (int i = 0; i < AbstractLongLongBenchHelper.NUM_VALUES; i++) {
             long key = ThreadLocalRandom.current().nextLong();
             long value = ThreadLocalRandom.current().nextLong();
             m.put(key, value);
