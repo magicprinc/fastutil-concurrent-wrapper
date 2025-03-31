@@ -7,15 +7,15 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ConcurrentLongIntMapBuilderTest {
-    private final int DEFAULT_VALUE = -1;
+    private static final int DEFAULT_VALUE = -1;
 
     @Test
     public void buildsBusyWaitingMap() {
-        ConcurrentLongIntMapBuilder b = ConcurrentLongIntMapBuilder.newBuilder()
+        var b = LongIntMap.newBuilder()
                 .withBuckets(2)
                 .withDefaultValue(DEFAULT_VALUE)
                 .withInitialCapacity(100)
-                .withMode(ConcurrentLongIntMapBuilder.MapMode.BUSY_WAITING)
+                .withMode(PrimitiveMapBuilder.MapMode.BUSY_WAITING)
                 .withLoadFactor(0.9f);
 
         LongIntMap map = b.build();
@@ -30,11 +30,11 @@ public class ConcurrentLongIntMapBuilderTest {
 
     @Test
     public void buildsBlockingMap() {
-        ConcurrentLongIntMapBuilder b = ConcurrentLongIntMapBuilder.newBuilder()
+        var b = LongIntMap.newBuilder()
                 .withBuckets(2)
                 .withDefaultValue(DEFAULT_VALUE)
                 .withInitialCapacity(100)
-                .withMode(ConcurrentLongIntMapBuilder.MapMode.BLOCKING)
+                .withMode(PrimitiveMapBuilder.MapMode.BLOCKING)
                 .withLoadFactor(0.9f);
 
         LongIntMap map = b.build();
@@ -42,7 +42,7 @@ public class ConcurrentLongIntMapBuilderTest {
         map.put(1L, 10);
         long v = map.get(1L);
 
-        assertTrue(map instanceof ConcurrentLongIntMap);
+			  assertInstanceOf(ConcurrentLongIntMap.class, map);
         assertEquals(10, v);
         assertEquals(map.get(2L), map.getDefaultValue());
     }

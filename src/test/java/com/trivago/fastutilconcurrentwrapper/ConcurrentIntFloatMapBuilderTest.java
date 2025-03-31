@@ -4,19 +4,18 @@ import com.trivago.fastutilconcurrentwrapper.map.ConcurrentBusyWaitingIntFloatMa
 import com.trivago.fastutilconcurrentwrapper.map.ConcurrentIntFloatMap;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ConcurrentIntFloatMapBuilderTest {
-    private final float DEFAULT_VALUE = -1f;
+    private static final float DEFAULT_VALUE = -1f;
 
     @Test
     public void buildsBusyWaitingMap() {
-        ConcurrentIntFloatMapBuilder b = ConcurrentIntFloatMapBuilder.newBuilder()
+        var b = IntFloatMap.newBuilder()
                 .withBuckets(2)
                 .withDefaultValue(DEFAULT_VALUE)
                 .withInitialCapacity(100)
-                .withMode(ConcurrentIntFloatMapBuilder.MapMode.BUSY_WAITING)
+                .withMode(PrimitiveMapBuilder.MapMode.BUSY_WAITING)
                 .withLoadFactor(0.8f);
 
         IntFloatMap map = b.build();
@@ -24,18 +23,18 @@ public class ConcurrentIntFloatMapBuilderTest {
         map.put(1, 10.1f);
         float v = map.get(1);
 
-        assertTrue(map instanceof ConcurrentBusyWaitingIntFloatMap);
+			  assertInstanceOf(ConcurrentBusyWaitingIntFloatMap.class, map);
         assertEquals(10.1f, v);
         assertEquals(map.get(2), map.getDefaultValue());
     }
 
     @Test
     public void buildsBlockingMap() {
-        ConcurrentIntFloatMapBuilder b = ConcurrentIntFloatMapBuilder.newBuilder()
+        var b = IntFloatMap.newBuilder()
                 .withBuckets(2)
                 .withDefaultValue(DEFAULT_VALUE)
                 .withInitialCapacity(100)
-                .withMode(ConcurrentIntFloatMapBuilder.MapMode.BLOCKING)
+                .withMode(PrimitiveMapBuilder.MapMode.BLOCKING)
                 .withLoadFactor(0.8f);
 
         IntFloatMap map = b.build();
@@ -43,7 +42,7 @@ public class ConcurrentIntFloatMapBuilderTest {
         map.put(1, 10.1f);
         float v = map.get(1);
 
-        assertTrue(map instanceof ConcurrentIntFloatMap);
+			  assertInstanceOf(ConcurrentIntFloatMap.class, map);
         assertEquals(10.1f, v);
         assertEquals(map.get(2), map.getDefaultValue());
     }

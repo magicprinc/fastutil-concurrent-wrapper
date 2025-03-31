@@ -1,6 +1,6 @@
 package com.trivago.kangaroo;
 
-import com.trivago.fastutilconcurrentwrapper.ConcurrentLongLongMapBuilder;
+import com.trivago.fastutilconcurrentwrapper.PrimitiveMapBuilder;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Scope;
@@ -15,6 +15,6 @@ public class FastutilWrapperBusyWaitingBenchmark extends AbstractBenchHelper {
 
     @Setup(Level.Trial)
     public void loadData() {
-        super.initAndLoadData(ConcurrentLongLongMapBuilder.MapMode.BUSY_WAITING);
+        super.initAndLoadData(PrimitiveMapBuilder.MapMode.BUSY_WAITING);
     }
 }

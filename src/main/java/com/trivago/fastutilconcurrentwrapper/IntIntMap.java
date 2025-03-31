@@ -1,16 +1,17 @@
 package com.trivago.fastutilconcurrentwrapper;
 
+import com.trivago.fastutilconcurrentwrapper.map.ConcurrentBusyWaitingIntIntMap;
+import com.trivago.fastutilconcurrentwrapper.map.ConcurrentIntIntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 
 import java.util.function.BiFunction;
 
-public interface IntIntMap extends PrimitiveIntKeyMap {
-
-    int DEFAULT_VALUE = 0;
+public interface IntIntMap extends PrimitiveKeyMap {
+    boolean containsKey(int key);
 
     /**
-     * @param key
-     * @return 0 if the key is not present
+     * @param key int Map.key
+     * @return defaultValue if the key is not present
      */
     int get(int key);
 
@@ -25,4 +26,17 @@ public interface IntIntMap extends PrimitiveIntKeyMap {
     int computeIfAbsent(int key, Int2IntFunction mappingFunction);
 
     int computeIfPresent(int key, BiFunction<Integer, Integer, Integer> mappingFunction);
+
+    static PrimitiveMapBuilder<IntIntMap,Integer> newBuilder () {
+        return new PrimitiveMapBuilder<>(){
+            @Override
+            public IntIntMap build () {
+                int def = defaultValue != null ? defaultValue : 0;
+                return switch (mapMode){
+                    case BUSY_WAITING -> new ConcurrentBusyWaitingIntIntMap(buckets, initialCapacity, loadFactor, def);
+                    case BLOCKING -> new ConcurrentIntIntMap(buckets, initialCapacity, loadFactor, def);
+                };
+            }
+        };
+    }
 }

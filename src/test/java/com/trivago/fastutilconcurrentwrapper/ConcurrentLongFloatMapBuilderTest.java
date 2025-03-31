@@ -7,15 +7,15 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ConcurrentLongFloatMapBuilderTest {
-    private final float DEFAULT_VALUE = -1f;
+    private static final float DEFAULT_VALUE = -1f;
 
     @Test
     public void buildsBusyWaitingMap() {
-        ConcurrentLongFloatMapBuilder b = ConcurrentLongFloatMapBuilder.newBuilder()
+        var b = LongFloatMap.newBuilder()
                 .withBuckets(2)
                 .withDefaultValue(DEFAULT_VALUE)
                 .withInitialCapacity(100)
-                .withMode(ConcurrentLongFloatMapBuilder.MapMode.BUSY_WAITING)
+                .withMode(PrimitiveMapBuilder.MapMode.BUSY_WAITING)
                 .withLoadFactor(0.8f);
 
         LongFloatMap map = b.build();
@@ -23,18 +23,18 @@ public class ConcurrentLongFloatMapBuilderTest {
         map.put(1L, 10.1f);
         float v = map.get(1L);
 
-        assertTrue(map instanceof ConcurrentBusyWaitingLongFloatMap);
+			  assertInstanceOf(ConcurrentBusyWaitingLongFloatMap.class, map);
         assertEquals(10.1f, v);
         assertEquals(map.get(2L), map.getDefaultValue());
     }
 
     @Test
     public void buildsBlockingMap() {
-        ConcurrentLongFloatMapBuilder b = ConcurrentLongFloatMapBuilder.newBuilder()
+        var b = LongFloatMap.newBuilder()
                 .withBuckets(2)
                 .withDefaultValue(DEFAULT_VALUE)
                 .withInitialCapacity(100)
-                .withMode(ConcurrentLongFloatMapBuilder.MapMode.BLOCKING)
+                .withMode(PrimitiveMapBuilder.MapMode.BLOCKING)
                 .withLoadFactor(0.8f);
 
         LongFloatMap map = b.build();

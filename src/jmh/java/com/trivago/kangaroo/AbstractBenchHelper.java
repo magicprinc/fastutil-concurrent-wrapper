@@ -1,26 +1,24 @@
 package com.trivago.kangaroo;
 
-import com.trivago.fastutilconcurrentwrapper.ConcurrentLongLongMapBuilder;
 import com.trivago.fastutilconcurrentwrapper.LongLongMap;
+import com.trivago.fastutilconcurrentwrapper.PrimitiveMapBuilder;
 
 import java.util.concurrent.ThreadLocalRandom;
 
 public abstract class AbstractBenchHelper extends AbstractCommonBenchHelper {
-
     protected static final int NUM_VALUES = 1_000_000;
-
     protected LongLongMap map;
 
-    public void initAndLoadData(ConcurrentLongLongMapBuilder.MapMode mode) {
-        if (mode.equals(ConcurrentLongLongMapBuilder.MapMode.BUSY_WAITING)) {
-            map = ConcurrentLongLongMapBuilder.newBuilder()
+    public void initAndLoadData(PrimitiveMapBuilder.MapMode mode) {
+        if (mode == PrimitiveMapBuilder.MapMode.BUSY_WAITING){
+            map = LongLongMap.newBuilder()
                     .withBuckets(16)
                     .withInitialCapacity(NUM_VALUES)
-                    .withMode(ConcurrentLongLongMapBuilder.MapMode.BUSY_WAITING)
+                    .withMode(PrimitiveMapBuilder.MapMode.BUSY_WAITING)
                     .withLoadFactor(0.8f)
                     .build();
         } else {
-            map = ConcurrentLongLongMapBuilder.newBuilder()
+            map = LongLongMap.newBuilder()
                     .withBuckets(16)
                     .withInitialCapacity(NUM_VALUES)
                     .withLoadFactor(0.8f)
@@ -34,18 +32,21 @@ public abstract class AbstractBenchHelper extends AbstractCommonBenchHelper {
         }
     }
 
-    public void testGet() {
+    @Override
+		public void testGet() {
         long key = ThreadLocalRandom.current().nextLong();
         map.get(key);
     }
 
-    public void testPut() {
+    @Override
+		public void testPut() {
         long key = ThreadLocalRandom.current().nextLong();
         long value = ThreadLocalRandom.current().nextLong();
         map.put(key, value);
     }
 
-    public void testAllOps() {
+    @Override
+		public void testAllOps() {
         int op = ThreadLocalRandom.current().nextInt(3);
         long key = ThreadLocalRandom.current().nextLong();
         switch (op) {
