@@ -20,6 +20,13 @@ public class JavaUtilWrapperObjectLongBenchmark extends AbstractCommonBenchHelpe
 
     Map<TestObjectKey, Long> map;
 
+    /**
+     * Initializes the benchmark map with random key-value pairs.
+     *
+     * <p>This method creates an {@code Object2LongOpenHashMap} with a predefined capacity and load factor,
+     * populates it with random long values using new {@code TestObjectKey} instances, and wraps the map
+     * in a synchronized wrapper. It is executed once per trial as part of the benchmark setup.</p>
+     */
     @Setup(Level.Trial)
     public void loadData() {
         Object2LongOpenHashMap<TestObjectKey> m = new Object2LongOpenHashMap<>(AbstractObjectLongBenchHelper.NUM_VALUES, 0.8f);
@@ -31,11 +38,23 @@ public class JavaUtilWrapperObjectLongBenchmark extends AbstractCommonBenchHelpe
         map = Collections.synchronizedMap(m);
     }
 
+    /**
+     * Executes a benchmark test for the get operation on the map.
+     *
+     * <p>This method retrieves a value using a newly instantiated TestObjectKey to measure the performance of 
+     * map lookup operations as part of the benchmark.
+     */
     @Override
 		public void testGet() {
         map.get(new TestObjectKey());
     }
 
+    /**
+     * Inserts a new key-value pair into the map used for benchmarking.
+     *
+     * <p>This method creates a new instance of TestObjectKey and generates a random long value,
+     * then adds the pair to the map.
+     */
     @Override
 		public void testPut() {
         TestObjectKey key = new TestObjectKey();
@@ -43,6 +62,18 @@ public class JavaUtilWrapperObjectLongBenchmark extends AbstractCommonBenchHelpe
         map.put(key, value);
     }
 
+    /**
+     * Executes one of the map operations (put, remove, or get) at random.
+     *
+     * <p>This method randomly selects one of three operations to perform on the map:
+     * <ul>
+     *   <li><b>Put</b> - Inserts a new {@code TestObjectKey} with a randomly generated long value.
+     *   <li><b>Remove</b> - Removes an entry associated with a new {@code TestObjectKey}.
+     *   <li><b>Get</b> - Retrieves the value for a new {@code TestObjectKey}.
+     * </ul>
+     * Each operation uses a freshly created instance of {@code TestObjectKey}. Note that no operation result is returned.
+     * </p>
+     */
     @Override
 		public void testAllOps() {
         int op = ThreadLocalRandom.current().nextInt(3);

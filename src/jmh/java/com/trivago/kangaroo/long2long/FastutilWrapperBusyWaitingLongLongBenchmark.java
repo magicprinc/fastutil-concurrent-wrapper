@@ -12,6 +12,12 @@ import org.openjdk.jmh.annotations.Warmup;
 @Warmup(iterations = 3, time = 1)
 @Measurement(iterations = 3, time = 2)
 public class FastutilWrapperBusyWaitingLongLongBenchmark extends AbstractLongLongBenchHelper {
+    /**
+     * Initializes and loads data in busy-waiting mode for the benchmark trial.
+     *
+     * <p>This method is executed once before the benchmark trial begins and sets up the data by
+     * invoking the superclass's data initialization routine with a busy-waiting strategy.
+     */
     @Setup(Level.Trial)
     public void loadData() {
         initAndLoadData(PrimitiveMapBuilder.MapMode.BUSY_WAITING);

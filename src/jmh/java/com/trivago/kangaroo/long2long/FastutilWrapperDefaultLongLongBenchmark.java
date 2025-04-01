@@ -12,6 +12,13 @@ import org.openjdk.jmh.annotations.Warmup;
 @Warmup(iterations = 3, time = 1)
 @Measurement(iterations = 3, time = 2)
 public class FastutilWrapperDefaultLongLongBenchmark extends AbstractLongLongBenchHelper {
+    /**
+     * Initializes and loads data for the benchmark trial.
+     * 
+     * <p>This setup method is executed once before the benchmark trial begins. It initializes
+     * the necessary data structures in blocking mode by invoking {@code initAndLoadData} with
+     * {@code PrimitiveMapBuilder.MapMode.BLOCKING}.</p>
+     */
     @Setup(Level.Trial)
     public void loadData() {
         initAndLoadData(PrimitiveMapBuilder.MapMode.BLOCKING);
