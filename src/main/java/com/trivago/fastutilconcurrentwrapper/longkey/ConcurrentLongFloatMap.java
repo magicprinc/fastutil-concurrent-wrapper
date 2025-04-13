@@ -2,11 +2,9 @@ package com.trivago.fastutilconcurrentwrapper.longkey;
 
 import com.trivago.fastutilconcurrentwrapper.PrimitiveConcurrentMap;
 import com.trivago.fastutilconcurrentwrapper.PrimitiveMapBuilder;
-import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.longs.Long2FloatFunction;
 import it.unimi.dsi.fastutil.longs.Long2FloatOpenHashMap;
 
-import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
 public class ConcurrentLongFloatMap extends PrimitiveConcurrentMap<Long,Float> {
@@ -28,92 +26,54 @@ public class ConcurrentLongFloatMap extends PrimitiveConcurrentMap<Long,Float> {
 
     public float getDefaultValue (){ return defaultValue; }
 
-    @Override
-    protected Function<Long,Float> mapAt (int index) {
-        return maps[index];
-    }
+    @Override protected Long2FloatOpenHashMap mapAt (int index){ return maps[index]; }
 
     public boolean containsKey(long key) {
         int bucket = getBucket(key);
-
-        Lock readLock = locks[bucket].readLock();
-        readLock.lock();
-        try {
+        try (var __ = readAt(bucket)){
             return maps[bucket].containsKey(key);
-        } finally {
-            readLock.unlock();
         }
     }
 
     public float get(long key) {
         int bucket = getBucket(key);
-
-        Lock readLock = locks[bucket].readLock();
-        readLock.lock();
-        try {
+        try (var __ = readAt(bucket)){
             return maps[bucket].getOrDefault(key, defaultValue);
-        } finally {
-            readLock.unlock();
         }
     }
 
     public float put(long key, float value) {
         int bucket = getBucket(key);
-
-        Lock writeLock = locks[bucket].writeLock();
-        writeLock.lock();
-        try {
+        try (var __ = writeAt(bucket)){
             return maps[bucket].put(key, value);
-        } finally {
-            writeLock.unlock();
         }
     }
 
     public float remove(long key) {
         int bucket = getBucket(key);
-
-        Lock writeLock = locks[bucket].writeLock();
-        writeLock.lock();
-        try {
+        try (var __ = writeAt(bucket)){
             return maps[bucket].remove(key);
-        } finally {
-            writeLock.unlock();
         }
     }
 
     public boolean remove(long key, float value) {
         int bucket = getBucket(key);
-
-        Lock writeLock = locks[bucket].writeLock();
-        writeLock.lock();
-        try {
+        try (var __ = writeAt(bucket)){
             return maps[bucket].remove(key, value);
-        } finally {
-            writeLock.unlock();
         }
     }
 
     public float computeIfAbsent(long key, Long2FloatFunction mappingFunction) {
         int bucket = getBucket(key);
-
-        Lock writeLock = locks[bucket].writeLock();
-        writeLock.lock();
-        try {
+        try (var __ = writeAt(bucket)){
             return maps[bucket].computeIfAbsent(key, mappingFunction);
-        } finally {
-            writeLock.unlock();
         }
     }
 
     public float computeIfPresent(int key, BiFunction<Long, Float, Float> mappingFunction) {
         int bucket = getBucket(key);
-
-        Lock writeLock = locks[bucket].writeLock();
-        writeLock.lock();
-        try {
+        try (var __ = writeAt(bucket)){
             return maps[bucket].computeIfPresent(key, mappingFunction);
-        } finally {
-            writeLock.unlock();
         }
     }
 

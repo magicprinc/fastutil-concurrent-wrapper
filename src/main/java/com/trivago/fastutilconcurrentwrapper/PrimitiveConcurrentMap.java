@@ -1,10 +1,10 @@
 package com.trivago.fastutilconcurrentwrapper;
 
+import com.trivago.fastutilconcurrentwrapper.util.CloseableLock;
+import com.trivago.fastutilconcurrentwrapper.util.PaddedReadWriteLock;
 import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.HashCommon;
 
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -13,31 +13,40 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  @see org.jctools.maps.NonBlockingHashMapLong
  */
 public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
-    protected final int numBuckets;
-    protected final ReadWriteLock[] locks;
+    private final int numBuckets;
+    private final PaddedReadWriteLock[] locks;
 
     protected PrimitiveConcurrentMap (int numBuckets) {
         if (numBuckets < 1 || numBuckets > 100_000_000)
             throw new IllegalArgumentException("numBuckets must be between 1 and 100_000_000, but: "+ numBuckets);
         this.numBuckets = numBuckets;
-        this.locks = new ReadWriteLock[numBuckets];
+        this.locks = new PaddedReadWriteLock[numBuckets];
         for (int i = 0; i < numBuckets; i++)
-            locks[i] = new ReentrantReadWriteLock();
+            locks[i] = new PaddedReadWriteLock();
     }//new
 
     /** Lock must be held! */
     protected abstract Function<K,V> mapAt (int index);
 
+    protected CloseableLock readAt (int lockIndex) {
+        return locks[lockIndex].read();
+    }
+    protected CloseableLock writeAt (int lockIndex) {
+        return locks[lockIndex].write();
+    }
+    protected ReentrantReadWriteLock.ReadLock readLock (int lockIndex) {
+        return locks[lockIndex].readLock();
+    }
+    protected ReentrantReadWriteLock.WriteLock writeLock (int lockIndex) {
+        return locks[lockIndex].writeLock();
+    }
+
     @Override
 		public int size () {
         int sum = 0;
-        for (int i = 0; i < numBuckets; i++) {
-            Lock readLock = locks[i].readLock();
-            readLock.lock();
-            try {
+        for (int i = 0; i < numBuckets; i++){
+            try (var __ = readAt(i)){
                 sum += mapAt(i).size();
-            } finally {
-                readLock.unlock();
             }
         }
         return sum;
@@ -46,14 +55,10 @@ public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
     @Override
 		public boolean isEmpty () {
         for (int i = 0; i < numBuckets; i++) {
-            Lock readLock = locks[i].readLock();
-            readLock.lock();
-            try {
+            try (var __ = readAt(i)){
                 boolean nonEmpty = mapAt(i).size() > 0;
                 if (nonEmpty)
                     return false;
-            } finally {
-                readLock.unlock();
             }
         }
         return true;// all sub-maps are empty
@@ -61,23 +66,19 @@ public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
 
     @Override
     public void clear () {
-        for (int i = 0; i < numBuckets; i++) {
-            Lock lock = locks[i].writeLock();
-            lock.lock();
-            try {
+        for (int i = 0; i < numBuckets; i++){
+            try (var __ = writeAt(i)){
                 mapAt(i).clear();
-            } finally {
-                lock.unlock();
             }
         }
     }
 
-    protected int getBucket(long key) {
+    protected int getBucket (long key) {
         int hash = Long.hashCode(key);
         return bucket(hash, numBuckets);
     }
 
-    protected int getBucket(int key) {
+    protected int getBucket (int key) {
         return bucket(key, numBuckets);// Integer.hashCode(key) == key
     }
 

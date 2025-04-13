@@ -13,8 +13,7 @@ public class ConcurrentBusyWaitingIntIntMap extends ConcurrentIntIntMap {
     @Override
     public boolean containsKey(int key) {
         int bucket = getBucket(key);
-
-        Lock readLock = locks[bucket].readLock();
+        Lock readLock = readLock(bucket);
 
         while (true) {
             if (readLock.tryLock()) {
@@ -31,8 +30,7 @@ public class ConcurrentBusyWaitingIntIntMap extends ConcurrentIntIntMap {
     @Override
     public int get(int key) {
         int bucket = getBucket(key);
-
-        Lock readLock = locks[bucket].readLock();
+        Lock readLock = readLock(bucket);
 
         while (true) {
             if (readLock.tryLock()) {
@@ -49,8 +47,7 @@ public class ConcurrentBusyWaitingIntIntMap extends ConcurrentIntIntMap {
     @Override
     public int put(int key, int value) {
         int bucket = getBucket(key);
-
-        Lock writeLock = locks[bucket].writeLock();
+        Lock writeLock = writeLock(bucket);
 
         while (true) {
             if (writeLock.tryLock()) {
@@ -67,8 +64,7 @@ public class ConcurrentBusyWaitingIntIntMap extends ConcurrentIntIntMap {
     @Override
     public int remove(int key) {
         int bucket = getBucket(key);
-
-        Lock writeLock = locks[bucket].writeLock();
+        Lock writeLock = writeLock(bucket);
 
         while (true) {
             if (writeLock.tryLock()) {
@@ -85,8 +81,7 @@ public class ConcurrentBusyWaitingIntIntMap extends ConcurrentIntIntMap {
     @Override
     public boolean remove(int key, int value) {
         int bucket = getBucket(key);
-
-        Lock writeLock = locks[bucket].writeLock();
+        Lock writeLock = writeLock(bucket);
 
         while (true) {
             if (writeLock.tryLock()) {
@@ -103,8 +98,7 @@ public class ConcurrentBusyWaitingIntIntMap extends ConcurrentIntIntMap {
     @Override
     public int computeIfAbsent(int key, Int2IntFunction mappingFunction) {
         int bucket = getBucket(key);
-
-        Lock writeLock = locks[bucket].writeLock();
+        Lock writeLock = writeLock(bucket);
 
         while (true) {
             if (writeLock.tryLock()) {
@@ -121,8 +115,7 @@ public class ConcurrentBusyWaitingIntIntMap extends ConcurrentIntIntMap {
     @Override
     public int computeIfPresent(int key, BiFunction<Integer, Integer, Integer> mappingFunction) {
         int bucket = getBucket(key);
-
-        Lock writeLock = locks[bucket].writeLock();
+        Lock writeLock = writeLock(bucket);
 
         while (true) {
             if (writeLock.tryLock()) {

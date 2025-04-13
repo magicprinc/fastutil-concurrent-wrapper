@@ -14,7 +14,7 @@ public class ConcurrentBusyWaitingObjectLongMap<K> extends ConcurrentObjectLongM
     public boolean containsKey (K key) {
         int bucket = getBucket(key);
 
-        Lock readLock = locks[bucket].readLock();
+        Lock readLock = readLock(bucket);
 
         while (true) {
             if (readLock.tryLock()) {
@@ -32,7 +32,7 @@ public class ConcurrentBusyWaitingObjectLongMap<K> extends ConcurrentObjectLongM
     public long get (K key) {
         int bucket = getBucket(key);
 
-        Lock readLock = locks[bucket].readLock();
+        Lock readLock = readLock(bucket);
 
         while (true) {
             if (readLock.tryLock()) {
@@ -50,7 +50,7 @@ public class ConcurrentBusyWaitingObjectLongMap<K> extends ConcurrentObjectLongM
     public long put (K key, long value) {
         int bucket = getBucket(key);
 
-        Lock writeLock = locks[bucket].writeLock();
+        Lock writeLock = writeLock(bucket);
 
         while (true) {
             if (writeLock.tryLock()) {
@@ -68,7 +68,7 @@ public class ConcurrentBusyWaitingObjectLongMap<K> extends ConcurrentObjectLongM
     public long remove (K key) {
         int bucket = getBucket(key);
 
-        Lock writeLock = locks[bucket].writeLock();
+        Lock writeLock = writeLock(bucket);
 
         while (true) {
             if (writeLock.tryLock()) {
@@ -86,7 +86,7 @@ public class ConcurrentBusyWaitingObjectLongMap<K> extends ConcurrentObjectLongM
     public boolean remove (K key, long value) {
         int bucket = getBucket(key);
 
-        Lock writeLock = locks[bucket].writeLock();
+        Lock writeLock = writeLock(bucket);
 
         while (true) {
             if (writeLock.tryLock()) {
@@ -104,7 +104,7 @@ public class ConcurrentBusyWaitingObjectLongMap<K> extends ConcurrentObjectLongM
     public long computeIfAbsent (K key, Object2LongFunction<K> mappingFunction) {
         int bucket = getBucket(key);
 
-        Lock writeLock = locks[bucket].writeLock();
+        Lock writeLock = writeLock(bucket);
 
         while (true) {
             if (writeLock.tryLock()) {
@@ -122,7 +122,7 @@ public class ConcurrentBusyWaitingObjectLongMap<K> extends ConcurrentObjectLongM
     public long computeIfPresent (K key, BiFunction<K,Long,Long> mappingFunction) {
         int bucket = getBucket(key);
 
-        Lock writeLock = locks[bucket].writeLock();
+        Lock writeLock = writeLock(bucket);
 
         while (true) {
             if (writeLock.tryLock()) {

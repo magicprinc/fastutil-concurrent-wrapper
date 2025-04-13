@@ -2,11 +2,9 @@ package com.trivago.fastutilconcurrentwrapper.longkey;
 
 import com.trivago.fastutilconcurrentwrapper.PrimitiveConcurrentMap;
 import com.trivago.fastutilconcurrentwrapper.PrimitiveMapBuilder;
-import it.unimi.dsi.fastutil.Function;
 import it.unimi.dsi.fastutil.longs.Long2ObjectFunction;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 
-import java.util.concurrent.locks.Lock;
 import java.util.function.BiFunction;
 
 public class ConcurrentLongObjectMap<V> extends PrimitiveConcurrentMap<Long,V> {
@@ -27,44 +25,26 @@ public class ConcurrentLongObjectMap<V> extends PrimitiveConcurrentMap<Long,V> {
             maps[i] = new Long2ObjectOpenHashMap<>(initialCapacity, loadFactor);
     }
 
-    @Override
-    protected final Function<Long,V> mapAt (int index) {
-        return maps[index];
-    }
+    @Override protected final Long2ObjectOpenHashMap<V> mapAt (int index){ return maps[index]; }
 
     public boolean containsKey(long key) {
         int bucket = getBucket(key);
-
-        Lock readLock = locks[bucket].readLock();
-        readLock.lock();
-        try {
+        try (var __ = readAt(bucket)){
             return maps[bucket].containsKey(key);
-        } finally {
-            readLock.unlock();
         }
     }
 
     public V get (long key) {
         int bucket = getBucket(key);
-
-        Lock readLock = locks[bucket].readLock();
-        readLock.lock();
-        try {
+        try (var __ = readAt(bucket)){
             return maps[bucket].getOrDefault(key, defaultValue);
-        } finally {
-            readLock.unlock();
         }
     }
 
     public V put (long key, V value) {
         int bucket = getBucket(key);
-
-        Lock writeLock = locks[bucket].writeLock();
-        writeLock.lock();
-        try {
+        try (var __ = writeAt(bucket)){
             return maps[bucket].put(key, value);
-        } finally {
-            writeLock.unlock();
         }
     }
 
@@ -72,49 +52,29 @@ public class ConcurrentLongObjectMap<V> extends PrimitiveConcurrentMap<Long,V> {
 
     public V remove (long key) {
         int bucket = getBucket(key);
-
-        Lock writeLock = locks[bucket].writeLock();
-        writeLock.lock();
-        try {
+        try (var __ = writeAt(bucket)){
             return maps[bucket].remove(key);
-        } finally {
-            writeLock.unlock();
         }
     }
 
     public boolean remove(long key, V value) {
         int bucket = getBucket(key);
-
-        Lock writeLock = locks[bucket].writeLock();
-        writeLock.lock();
-        try {
+        try (var __ = writeAt(bucket)){
             return maps[bucket].remove(key, value);
-        } finally {
-            writeLock.unlock();
         }
     }
 
     public V computeIfAbsent (long key, Long2ObjectFunction<V> mappingFunction) {
         int bucket = getBucket(key);
-
-        Lock writeLock = locks[bucket].writeLock();
-        writeLock.lock();
-        try {
+        try (var __ = writeAt(bucket)){
             return maps[bucket].computeIfAbsent(key, mappingFunction);
-        } finally {
-            writeLock.unlock();
         }
     }
 
     public V computeIfPresent (long key, BiFunction<Long,V,V> mappingFunction) {
         int bucket = getBucket(key);
-
-        Lock writeLock = locks[bucket].writeLock();
-        writeLock.lock();
-        try {
+        try (var __ = writeAt(bucket)){
             return maps[bucket].computeIfPresent(key, mappingFunction);
-        } finally {
-            writeLock.unlock();
         }
     }
 
