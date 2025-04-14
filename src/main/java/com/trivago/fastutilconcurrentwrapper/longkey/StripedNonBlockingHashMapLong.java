@@ -8,14 +8,17 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import org.jctools.maps.NonBlockingHashMapLong;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.LongConsumer;
 
 /**
  Similar to {@link ConcurrentLongObjectMap}, but backed with NonBlockingHashMapLong ⇒ non-blocking reads 🚀
@@ -200,6 +203,14 @@ public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, 
 
 	public StripedLongIterator keys (){ return new StripedLongIterator(this); }
 
+	public void forEachKey (LongConsumer action) {
+		var it = (NonBlockingHashMapLong<E>.IteratorLong) m.keys();
+		try {
+			while (it.hasNext())
+					action.accept(it.nextLong());
+		} catch (CancellationException ignored){}
+	}
+
 	@Override
 	public LongSet keySet () {
 		throw new UnsupportedOperationException("keySet");
@@ -276,6 +287,7 @@ public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, 
 	public ObjectSet<Long2ObjectMap.Entry<E>> long2ObjectEntrySet () {
 		throw new UnsupportedOperationException();
 	}
+
 	public <R> R withLock (long key, Function<Long2ObjectMap.Entry<E>,R> withLock) {
 		try (var __ = write(key)){
 			Long2ObjectMap.Entry<E> x = new Long2ObjectMap.Entry<E>() {
