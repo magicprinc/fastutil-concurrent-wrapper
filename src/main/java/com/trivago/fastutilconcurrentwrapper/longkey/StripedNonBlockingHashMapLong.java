@@ -276,4 +276,17 @@ public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, 
 	public ObjectSet<Long2ObjectMap.Entry<E>> long2ObjectEntrySet () {
 		throw new UnsupportedOperationException();
 	}
+	public <R> R withLock (long key, Function<Long2ObjectMap.Entry<E>,R> withLock) {
+		try (var __ = write(key)){
+			Long2ObjectMap.Entry<E> x = new Long2ObjectMap.Entry<E>() {
+				@Override public long getLongKey (){ return key; }
+				@Override public E getValue (){ return m.get(key); }
+				@Override public E setValue (E value){
+					return value != null ? m.put(key, value)
+							: m.remove(key);
+				}
+			};
+			return withLock.apply(x);
+		}
+	}
 }

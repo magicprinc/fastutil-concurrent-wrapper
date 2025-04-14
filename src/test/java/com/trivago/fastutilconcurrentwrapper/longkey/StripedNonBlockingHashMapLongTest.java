@@ -229,4 +229,48 @@ class StripedNonBlockingHashMapLongTest {
 		long duration = System.currentTimeMillis() - startTime;
 		System.out.println("Performance test completed in " + duration + "ms");
 	}
+
+	@Test
+	void _withLock () {
+		StripedNonBlockingHashMapLong<Integer> map = spawn();
+
+		map.put(1L, (Integer) 999);
+		var r = map.withLock(1, x->{
+			assertEquals(1, x.getLongKey());
+			assertEquals(1, x.getKey());
+			assertEquals(999, x.getValue());
+			var prev = x.setValue(-1);
+			assertEquals(999, prev);
+			assertEquals(-1, x.getValue());
+			return 31;
+		});
+		assertEquals(31, r);
+		assertEquals(-1, map.get(1));
+
+		r = map.withLock(2, x->{
+			assertEquals(2, x.getLongKey());
+			assertEquals(2, x.getKey());
+			assertNull(x.getValue());
+			var prev = x.setValue(42);
+			assertNull(prev);
+			assertEquals(42, x.getValue());
+			return 17;
+		});
+		assertEquals(17, r);
+		assertEquals(42, map.get(2));
+
+		r = map.withLock(2, x->{
+			assertEquals(2, x.getLongKey());
+			assertEquals(2, x.getKey());
+			assertEquals(42, x.getValue());
+			var prev = x.setValue(null);
+			assertEquals(42, prev);
+			assertNull(x.getValue());
+			assertFalse(map.containsKey(2));
+			return 3;
+		});
+		assertEquals(3, r);
+		assertNull(map.get(2));
+		assertFalse(map.containsKey(2));
+	}
 }
