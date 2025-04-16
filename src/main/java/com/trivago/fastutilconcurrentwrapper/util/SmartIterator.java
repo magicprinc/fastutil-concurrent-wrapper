@@ -1,5 +1,7 @@
 package com.trivago.fastutilconcurrentwrapper.util;
 
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.ObjectSpliterator;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
@@ -7,7 +9,6 @@ import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -47,29 +48,15 @@ import java.util.stream.StreamSupport;
  @see com.google.common.collect.AbstractSequentialIterator
  @see com.google.common.collect.UnmodifiableIterator
 */
-public interface SmartIterator<E> extends Iterator<E>, Spliterator<E> {
+public interface SmartIterator<E> extends ObjectIterator<E>, ObjectSpliterator<E> {
 	@Override
-	default @Nullable Spliterator<E> trySplit () {
+	default @Nullable ObjectSpliterator<E> trySplit () {
 		return null;// cannot be split
 	}
 
 	@Override default long estimateSize (){ return Long.MAX_VALUE; }
 
 	@Override default int characteristics (){ return Spliterator.ORDERED; }
-
-	/** Меняем тип значения элемента Iterator */
-	default <R> SmartIterator<R> map (Function<E,R> itemConverter) {
-	  class MappingIterator implements SmartIterator<R> {
-			@Override public boolean hasNext (){ return SmartIterator.this.hasNext(); }
-			@Override public R next () {
-				return itemConverter.apply(SmartIterator.this.next());
-			}
-			@Override public String toString (){ return SmartIterator.this.toString(); }
-			@Override public long estimateSize (){ return SmartIterator.this.estimateSize(); }
-			@Override public void close (){ SmartIterator.this.close(); }
-		}
-		return new MappingIterator();
-	}
 
 	@Override
 	default boolean tryAdvance (Consumer<? super E> action) {
@@ -83,29 +70,7 @@ public interface SmartIterator<E> extends Iterator<E>, Spliterator<E> {
 
 	@Override
 	default void forEachRemaining (Consumer<? super E> action) {
-		Iterator.super.forEachRemaining(action);
-	}
-
-	/**
-	 * Skips the given number of elements.
-	 *
-	 * <p>
-	 * The effect of this call is exactly the same as that of calling {@link #next()} for {@code n}
-	 * times (possibly stopping if {@link #hasNext()} becomes false).
-	 *
-	 * @param n the number of elements to skip.
-	 * @return the number of elements actually skipped.
-	 * @see Iterator#next()
-	 */
-	default int skip (int n) {
-		if (n < 0){
-			assert false : "skip < 0: %d for Iterator %s".formatted(n, this);
-			return -1;
-		}
-		int i = n;
-		while (i-- != 0 && hasNext())
-				next();
-		return n - i - 1;
+		ObjectIterator.super.forEachRemaining(action);
 	}
 
 	default Stream<E> stream () {

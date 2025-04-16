@@ -1,5 +1,7 @@
 package com.trivago.fastutilconcurrentwrapper.util;
 
+import it.unimi.dsi.fastutil.objects.ObjectCollection;
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
@@ -9,7 +11,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Spliterator;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -20,7 +21,7 @@ import java.util.stream.Stream;
 /**
  @see java.util.Collections#synchronizedCollection(Collection)
 */
-public class ReadWriteLockCollection<E> implements Collection<E>, Serializable {
+public class ReadWriteLockCollection<E> implements ObjectCollection<E>, Serializable {
 	@Serial private static final long serialVersionUID = -2261498858663173273L;
 	final Collection<E> c;  // Backing Collection
 	final ReadWriteLock lock;
@@ -213,18 +214,9 @@ public class ReadWriteLockCollection<E> implements Collection<E>, Serializable {
 		try (var __ = write()){ c.clear(); }
 	}
 
-	@Override
-	public Spliterator<E> spliterator () {
-		return iterator();
-	}
+	@Override public SmartIterator<E> spliterator (){ return iterator(); }
 
-	@Override
-	public Stream<E> stream () {
-		return iterator().stream();
-	}
+	@Override public Stream<E> stream (){ return iterator().stream(); }
 
-	@Override
-	public Stream<E> parallelStream () {
-		return iterator().stream().parallel();
-	}
+	@Override public Stream<E> parallelStream (){ return iterator().stream().parallel(); }
 }
