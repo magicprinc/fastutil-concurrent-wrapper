@@ -17,28 +17,32 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.LongConsumer;
 
 /**
  Similar to {@link ConcurrentLongObjectMap}, but backed with NonBlockingHashMapLong ⇒ non-blocking reads 🚀
  https://github.com/JCTools/JCTools/blob/master/jctools-core/src/main/java/org/jctools/maps/NonBlockingHashMapLong.java
+ https://stackoverflow.com/questions/61721386/caffeine-cache-specify-expiry-for-an-entry
 
  @see org.jctools.maps.NonBlockingHashMapLong
  @see it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
  @see com.google.common.util.concurrent.Striped
+
+ @see NBHMLCacheExpirer
 */
 @SuppressWarnings("LockAcquiredButNotSafelyReleased")
 public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, Long2ObjectMap<E>, PrimitiveKeyMap {
-	private final org.jctools.maps.NonBlockingHashMapLong<E> m;
+	final NonBlockingHashMapLong<E> m;
 	/** @see com.google.common.util.concurrent.Striped#lock(int) */
-	private final PaddedLock[] s;
+	final PaddedLock[] s;
 
 	@SuppressWarnings("resource")
 	public StripedNonBlockingHashMapLong (int initialSize, boolean optForSpace, int stripes) {
 		assert stripes > 0 : "Stripes must be positive, but "+stripes;
 		assert stripes < 100_000_000 : "Too much Stripes: "+stripes;
-		m = new org.jctools.maps.NonBlockingHashMapLong<>(Math.max(initialSize, stripes), optForSpace);
+		m = new NonBlockingHashMapLong<>(Math.max(initialSize, stripes), optForSpace);
 		s = new PaddedLock[stripes];
 		for (int i = 0; i < stripes; i++)
 				s[i] = new PaddedLock();
@@ -53,22 +57,20 @@ public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, 
 
 	@Override public int size (){ return m.size(); }
 	@Override public boolean isEmpty (){ return m.isEmpty(); }
+
 	@Override
 	public synchronized void clear () {
-		for (PaddedLock paddedLock : s)
-				paddedLock.lock();
-		try {
-			m.clear();
-		} finally {
-			for (Lock lock : s)
-					lock.unlock();
-		}
+		withAllKeysWriteLock(NonBlockingHashMapLong::clear);
 	}
 	public synchronized void clear (boolean large) {
+		withAllKeysWriteLock(map->map.clear(large));
+	}
+
+	public void withAllKeysWriteLock (Consumer<NonBlockingHashMapLong<E>> singleThreadMapModifier) {
 		for (PaddedLock paddedLock : s)
 				paddedLock.lock();
 		try {
-			m.clear(large);
+			singleThreadMapModifier.accept(m);
 		} finally {
 			for (Lock lock : s)
 					lock.unlock();
@@ -87,11 +89,11 @@ public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, 
 	}
 
 	@Override  @Deprecated
-	public boolean remove (/*Long*/Object key, Object value) {
+	public boolean remove (/*Long*/Object key, /*E*/ Object value) {
 		return remove(((Long)key).longValue(), value);
 	}
 	@Override
-	public boolean remove (long key, Object value) {
+	public boolean remove (long key, /*E*/ Object value) {
 		try (var __ = write(key)){
 			return m.remove(key, value);
 		}
@@ -164,22 +166,22 @@ public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, 
 		}
 	}
 
-	/** @see org.jctools.maps.NonBlockingHashMapLong#putAll */
+	/** @see NonBlockingHashMapLong#putAll */
 	@Override
 	public void putAll (Map<? extends Long,? extends E> fromMap) {
 		for (var e : m.entrySet())
 				put(e.getKey(), e.getValue());
 	}
 
-	/** @see org.jctools.maps.NonBlockingHashMapLong.IteratorLong */
+	/** @see NonBlockingHashMapLong.IteratorLong */
 	public static class StripedLongIterator implements LongIterator {
 		private final StripedNonBlockingHashMapLong<?> owner;
-		private final org.jctools.maps.NonBlockingHashMapLong<?>.IteratorLong it;
+		private final NonBlockingHashMapLong<?>.IteratorLong it;
 		private long seenKey;// ^ safe for concurrent
 
 		public StripedLongIterator (StripedNonBlockingHashMapLong<?> owner) {
 			this.owner = owner;
-			it = (org.jctools.maps.NonBlockingHashMapLong<?>.IteratorLong) owner.m.keys();
+			it = (NonBlockingHashMapLong<?>.IteratorLong) owner.m.keys();
 		}//new
 
 		/** Remove last key returned by {@link #next} or {@link #nextLong}. */
@@ -217,7 +219,7 @@ public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, 
 	}
 	public long[] keySetLong (){ return m.keySetLong(); }
 
-	/** @see org.jctools.maps.NonBlockingHashMapLong#values()  */
+	/** @see NonBlockingHashMapLong#values()  */
 	@Override
 	public ObjectCollection<E> values () {
 		throw new UnsupportedOperationException();
@@ -290,15 +292,76 @@ public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, 
 
 	public <R> R withLock (long key, Function<Long2ObjectMap.Entry<E>,R> withLock) {
 		try (var __ = write(key)){
-			Long2ObjectMap.Entry<E> x = new Long2ObjectMap.Entry<E>() {
+			var x = new Long2ObjectMap.Entry<E>() {
 				@Override public long getLongKey (){ return key; }
-				@Override public E getValue (){ return m.get(key); }
+				@Override public E getValue (){ return m.get(key); }// can be changed inside withLock
 				@Override public E setValue (E value){
 					return value != null ? m.put(key, value)
 							: m.remove(key);
 				}
 			};
 			return withLock.apply(x);
+		}
+	}
+
+
+	public abstract static class NBHMLCacheExpirer<E> implements LongConsumer, Function<Long2ObjectMap.Entry<E>,Object>{
+		protected final StripedNonBlockingHashMapLong<E> cacheMap;
+
+		public NBHMLCacheExpirer (StripedNonBlockingHashMapLong<E> cacheMap){ this.cacheMap = cacheMap; }//new
+
+		/** Heuristic: {@link #expire()} is called from a single thread (scheduler) when working correctly: Atomic/volatile is not needed */
+		protected long expiredCount;
+
+		/** Processing of a deleted (evicted, expired) entry  */
+		protected void postProcessExpiredEntry (long key, E value){}
+
+		/** ~ value.getDeadline() ≤ now */
+		protected abstract boolean isExpired (long key, E value);
+
+		protected void beforeExpire () {
+			// now = System.nanoTime();
+		}
+
+		/**
+		 Example: how to make "true cache" with expiration.
+
+		 https://github.com/JCTools/JCTools/blob/master/jctools-core/src/main/java/org/jctools/maps/NonBlockingHashMapLong.java
+		 https://stackoverflow.com/questions/61721386/caffeine-cache-specify-expiry-for-an-entry
+		 @see com.github.benmanes.caffeine.cache.Cache#policy()
+		 @see com.github.benmanes.caffeine.cache.Policy#expireVariably()
+
+		 @see org.springframework.scheduling.annotation.Scheduled
+		 @see java.util.Set#removeIf
+		*/
+		public void expire () {
+			long initialExpiredCount = expiredCount;
+			beforeExpire();
+			cacheMap.forEachKey(this);// see accept(long longKey)
+			reportExpireResult(initialExpiredCount);
+		}
+
+		/** @see #forEachKey(LongConsumer) */
+		@Override
+		public void accept (long longKey) {
+			E value = cacheMap.get(longKey);// can be gone already
+			if (value != null && isExpired(longKey, value))// first "light" check
+					cacheMap.withLock(longKey, this);
+		}//LongConsumer#accept for expire → forEachKey
+
+		/** @see #withLock(long, Function)  */
+		@Override
+		public @Nullable Object apply (Long2ObjectMap.Entry<E> e) {
+			if (e.getValue() != null && isExpired(e.getLongKey(), e.getValue())){// double check idiom
+				expiredCount++;
+				postProcessExpiredEntry(e.getLongKey(), e.getValue());
+				e.setValue(null);// expired ⇒ remove
+			}
+			return null;
+		}//Function#apply for LongConsumer#accept → withLock
+
+		private void reportExpireResult (long initialExpiredCount) {
+			//LOGGER.debug("{}.expire entries: {} / {}, expiredSinceStart: {}", beanName, expiredCount - initialExpiredCount, cacheMap.size(), expiredCount);
 		}
 	}
 }
