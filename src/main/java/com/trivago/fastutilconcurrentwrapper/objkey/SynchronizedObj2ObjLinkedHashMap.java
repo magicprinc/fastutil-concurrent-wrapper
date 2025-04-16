@@ -1,14 +1,15 @@
 package com.trivago.fastutilconcurrentwrapper.objkey;
 
+import com.trivago.fastutilconcurrentwrapper.util.CloseableLock;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectFunction;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiFunction;
 
@@ -19,30 +20,46 @@ import java.util.function.BiFunction;
 */
 public class SynchronizedObj2ObjLinkedHashMap<K,V> implements Object2ObjectMap<K, V> {
 	final Object2ObjectLinkedOpenHashMap<K,V> m;
-	final ReadWriteLock lock = new ReentrantReadWriteLock();
+	final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 
 	public SynchronizedObj2ObjLinkedHashMap (int expected, float f) {
 		m = new Object2ObjectLinkedOpenHashMap<>(expected, f);
 	}//new
 
-	public SynchronizedObj2ObjLinkedHashMap () {
-		m = new Object2ObjectLinkedOpenHashMap<>();
-	}//new
+	public SynchronizedObj2ObjLinkedHashMap (){ m = new Object2ObjectLinkedOpenHashMap<>(); }//new
+
+	private void unlockReadLock () {
+		lock.readLock().unlock();
+	}
+	@SuppressWarnings("LockAcquiredButNotSafelyReleased")
+	protected CloseableLock read () {
+		lock.readLock().lock();
+		return this::unlockReadLock;
+	}
+
+	private void unlockWriteLock () {
+		lock.writeLock().unlock();
+	}
+	@SuppressWarnings("LockAcquiredButNotSafelyReleased")
+	protected CloseableLock write () {
+		lock.writeLock().lock();
+		return this::unlockWriteLock;
+	}
+
 
 	@Override
 	public int size () {
-		return 0;
+		try (var __ = read()) {
+			return m.size();
+		}
 	}
 
 	@Override
-	public void defaultReturnValue (V rv) {
-
+	public void defaultReturnValue (V rv){
+		throw new UnsupportedOperationException();
 	}
 
-	@Override
-	public V defaultReturnValue () {
-		return null;
-	}
+	@Override public @Nullable V defaultReturnValue (){ return null; }
 
 	@Override
 	public ObjectSet<Entry<K,V>> object2ObjectEntrySet () {
