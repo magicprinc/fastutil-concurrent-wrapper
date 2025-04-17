@@ -14,7 +14,6 @@ public final class PaddedReadWriteLock extends ReentrantReadWriteLock {
 	 */
 	long unused1;
 	long unused2;
-	long unused3;
 	private final CloseableLock read  = ()->
 			readLock().unlock();
 	private final CloseableLock write = ()->
