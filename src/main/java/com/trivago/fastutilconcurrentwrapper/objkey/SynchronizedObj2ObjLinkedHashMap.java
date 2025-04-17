@@ -2,7 +2,6 @@ package com.trivago.fastutilconcurrentwrapper.objkey;
 
 import com.trivago.fastutilconcurrentwrapper.util.CloseableLock;
 import com.trivago.fastutilconcurrentwrapper.util.PaddedReadWriteLock;
-import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectFunction;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -22,7 +21,6 @@ import java.util.function.Function;
 /**
  @see java.util.Collections#synchronizedMap(Map)
  @see java.util.LinkedHashMap
- @see Int2ObjectLinkedOpenHashMap
 */
 public class SynchronizedObj2ObjLinkedHashMap<K,V> implements Object2ObjectSortedMap<K,V> {
 	protected final Object2ObjectLinkedOpenHashMap<K,V> m;
@@ -58,15 +56,16 @@ public class SynchronizedObj2ObjLinkedHashMap<K,V> implements Object2ObjectSorte
 		try (var __ = read()){ return m.values().toArray(valueArray); }
 	}
 
-	public void forEachKeyRead (Consumer<K> action) {
+	public void forEachKey (Consumer<K> action) {
 		try (var __ = read()){ m.keySet().forEach(action); }
 	}
 
-	public void forEachValueRead (Consumer<V> action) {
+	public void forEachValue (Consumer<V> action) {
 		try (var __ = read()){ m.values().forEach(action); }
 	}
 
-	public void forEachEntryRead (BiConsumer<K,V> action) {
+	@Override
+	public void forEach (BiConsumer<? super K,? super V> action) {
 		try (var __ = read()){
 			m.forEach(action);
 		}
@@ -95,6 +94,26 @@ public class SynchronizedObj2ObjLinkedHashMap<K,V> implements Object2ObjectSorte
 	@Override
 	public boolean containsValue (Object value) {
 		try (var __ = read()){ return m.containsValue(value); }
+	}
+
+	@Override
+	public String toString () {
+		try (var __ = read()){ return m.toString(); }
+	}
+
+	@Override
+	public int hashCode () {
+		try (var __ = read()){ return m.hashCode(); }
+	}
+
+	@Override
+	public boolean equals (Object obj) {
+		if (this == obj){ return true; }
+		try (var __ = read()){
+			return obj instanceof SynchronizedObj2ObjLinkedHashMap<?,?> x
+					? m.equals(x)
+					: m.equals(obj);
+		}
 	}
 
 	@Override public Comparator<? super K> comparator (){ return m.comparator(); }
@@ -195,5 +214,10 @@ public class SynchronizedObj2ObjLinkedHashMap<K,V> implements Object2ObjectSorte
 	@Override
 	public V put (K key, V value) {
 		try (var __ = write()){ return m.put(key, value); }
+	}
+
+	@Override
+	public V remove (Object key) {
+		try (var __ = write()){ return m.remove(key); }
 	}
 }
