@@ -110,6 +110,16 @@ public class SynchronizedInt2ObjLinkedHashMap<V> implements Int2ObjectSortedMap<
 		try (var __ = read()){ return m.containsValue(value); }
 	}
 
+	@Override  @Deprecated
+	public V get (Object key) {
+		try (var __ = read()){ return m.get(key); }
+	}
+
+	@Override  @Deprecated
+	public boolean containsKey (Object key) {
+		try (var __ = read()){ return m.containsKey(key); }
+	}
+
 	@Override
 	public String toString () {
 		try (var __ = read()){ return m.toString(); }
@@ -127,6 +137,7 @@ public class SynchronizedInt2ObjLinkedHashMap<V> implements Int2ObjectSortedMap<
 					: m.equals(obj);
 		}
 	}
+
 	@Override public IntComparator comparator (){ return m.comparator(); }
 
 	/** Full copy ~ snapshot! */
@@ -246,5 +257,55 @@ public class SynchronizedInt2ObjLinkedHashMap<V> implements Int2ObjectSortedMap<
 	@Override  @Deprecated
 	public V remove (Object key) {
 		try (var __ = write()){ return m.remove(key); }
+	}
+
+	@Override  @Deprecated
+	public V put (Integer key, V value) {
+		try (var __ = write()){ return m.put(key, value); }
+	}
+
+	@Override
+	public void replaceAll (BiFunction<? super Integer,? super V,? extends V> function) {
+		try (var __ = write()){ m.replaceAll(function); }
+	}
+
+	@Override
+	public V putIfAbsent (Integer key, V value) {
+		try (var __ = write()){ return m.putIfAbsent(key, value); }
+	}
+
+	@Override
+	public boolean remove (Object key, Object value) {
+		try (var __ = write()){ return m.remove(key, value); }
+	}
+
+	@Override
+	public boolean replace (Integer key, V oldValue, V newValue) {
+		try (var __ = write()){ return m.replace(key, oldValue, newValue); }
+	}
+
+	@Override
+	public V replace (Integer key, V value) {
+		try (var __ = write()){ return m.replace(key, value); }
+	}
+
+	@Override
+	public V computeIfAbsent (Integer key, Function<? super Integer,? extends V> mappingFunction) {
+		try (var __ = write()){ return m.computeIfAbsent(key, mappingFunction); }
+	}
+
+	@Override
+	public V computeIfPresent (Integer key, BiFunction<? super Integer,? super V,? extends V> remappingFunction) {
+		try (var __ = write()){ return m.computeIfPresent(key, remappingFunction); }
+	}
+
+	@Override
+	public V compute (Integer key, BiFunction<? super Integer,? super @Nullable V,? extends V> remappingFunction) {
+		try (var __ = write()){ return m.compute(key, remappingFunction); }
+	}
+
+	@Override
+	public V merge (Integer key, V value, BiFunction<? super V,? super V,? extends V> remappingFunction) {
+		try (var __ = write()){ return m.merge(key, value, remappingFunction); }
 	}
 }

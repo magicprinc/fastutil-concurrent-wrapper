@@ -225,4 +225,14 @@ public class SynchronizedObj2ObjLinkedHashMap<K,V> implements Object2ObjectSorte
 	public V remove (Object key) {
 		try (var __ = write()){ return m.remove(key); }
 	}
+
+	@Override
+	public void replaceAll (BiFunction<? super K,? super V,? extends V> function) {
+		try (var __ = write()){  m.replaceAll(function); }
+	}
+
+	@Override
+	public V computeIfAbsent (K key, Function<? super K,? extends V> mappingFunction) {
+		try (var __ = write()){ return m.computeIfAbsent(key, mappingFunction); }
+	}
 }
