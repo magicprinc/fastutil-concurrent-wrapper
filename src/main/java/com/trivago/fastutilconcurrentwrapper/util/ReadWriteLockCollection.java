@@ -103,11 +103,10 @@ public class ReadWriteLockCollection<E> implements ObjectCollection<E>, Serializ
 				E v;
 				try (var __ = read()){
 					var i = it();
-					if (i.hasNext()){
-						v = i.next();
-					} else {
-						return false;
-					}
+					if (i.hasNext())
+							v = i.next();
+					else
+							return false;
 				}
 				action.accept(v);
 				return true;
