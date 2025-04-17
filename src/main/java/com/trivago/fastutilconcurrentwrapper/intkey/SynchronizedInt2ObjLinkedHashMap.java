@@ -10,7 +10,6 @@ import it.unimi.dsi.fastutil.ints.IntComparator;
 import it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
 import org.jspecify.annotations.Nullable;
 
@@ -35,9 +34,7 @@ public class SynchronizedInt2ObjLinkedHashMap<V> implements Int2ObjectSortedMap<
 		m = new Int2ObjectLinkedOpenHashMap<>(expected, f);
 	}//new
 
-	public SynchronizedInt2ObjLinkedHashMap () {
-		m = new Int2ObjectLinkedOpenHashMap<>();
-	}//new
+	public SynchronizedInt2ObjLinkedHashMap (){ m = new Int2ObjectLinkedOpenHashMap<>(); }//new
 
 	protected CloseableLock read () {
 		return lock.read();
@@ -115,7 +112,7 @@ public class SynchronizedInt2ObjLinkedHashMap<V> implements Int2ObjectSortedMap<
 
 	/** Full copy ~ snapshot! */
 	@Override
-	public ObjectCollection<V> values () {
+	public ObjectArrayList<V> values () {
 		try (var __ = read()){
 			return new ObjectArrayList<>(m.values());
 		}
