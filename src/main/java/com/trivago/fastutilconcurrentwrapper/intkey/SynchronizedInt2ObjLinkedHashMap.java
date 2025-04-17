@@ -1,5 +1,6 @@
 package com.trivago.fastutilconcurrentwrapper.intkey;
 
+import com.trivago.fastutilconcurrentwrapper.objkey.SynchronizedObj2ObjLinkedHashMap;
 import com.trivago.fastutilconcurrentwrapper.util.CloseableLock;
 import com.trivago.fastutilconcurrentwrapper.util.PaddedReadWriteLock;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
@@ -10,10 +11,12 @@ import it.unimi.dsi.fastutil.ints.IntComparator;
 import it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -60,18 +63,25 @@ public class SynchronizedInt2ObjLinkedHashMap<V> implements Int2ObjectSortedMap<
 		try (var __ = read()){ return m.values().toArray(valueArray); }
 	}
 
-	public void forEachKeyRead (IntConsumer action) {
+	public void forEachKey (IntConsumer action) {
 		try (var __ = read()){ m.keySet().forEach(action); }
 	}
 
-	public void forEachValueRead (Consumer<V> action) {
+	public void forEachValue (Consumer<V> action) {
 		try (var __ = read()){ m.values().forEach(action); }
 	}
 
-	public void forEachEntryRead (ObjIntConsumer<V> action) {
+	public void forEachEntry (ObjIntConsumer<V> action) {
 		try (var __ = read()){
 			for (var e : m.int2ObjectEntrySet())
 				action.accept(e.getValue(), e.getIntKey());
+		}
+	}
+
+	@Override
+	public void forEach (BiConsumer<? super Integer,? super V> action) {
+		try (var __ = read()){
+			m.forEach(action);
 		}
 	}
 
@@ -100,6 +110,23 @@ public class SynchronizedInt2ObjLinkedHashMap<V> implements Int2ObjectSortedMap<
 		try (var __ = read()){ return m.containsValue(value); }
 	}
 
+	@Override
+	public String toString () {
+		try (var __ = read()){ return m.toString(); }
+	}
+	@Override
+	public int hashCode () {
+		try (var __ = read()){ return m.hashCode(); }
+	}
+	@Override
+	public boolean equals (Object obj) {
+		if (this == obj){ return true; }
+		try (var __ = read()){
+			return obj instanceof SynchronizedObj2ObjLinkedHashMap<?,?> x
+					? m.equals(x)
+					: m.equals(obj);
+		}
+	}
 	@Override public IntComparator comparator (){ return m.comparator(); }
 
 	/** Full copy ~ snapshot! */
@@ -118,12 +145,17 @@ public class SynchronizedInt2ObjLinkedHashMap<V> implements Int2ObjectSortedMap<
 		}
 	}
 
+	/** Full copy ~ snapshot! */
+	@Override
+	public ObjectSortedSet<Int2ObjectMap.Entry<V>> int2ObjectEntrySet (){
+		return new ObjectLinkedOpenHashSet<>(m.int2ObjectEntrySet());
+	}
+
 	@Override public void defaultReturnValue (V rv){ throw new UnsupportedOperationException(); }
 	@Override public @Nullable V defaultReturnValue (){ return null; }
 	@Override public Int2ObjectSortedMap<V> subMap (int fromKey, int toKey){ throw new UnsupportedOperationException(); }
 	@Override public Int2ObjectSortedMap<V> headMap (int toKey){ throw new UnsupportedOperationException(); }
 	@Override public Int2ObjectSortedMap<V> tailMap (int fromKey){ throw new UnsupportedOperationException(); }
-	@Override public ObjectSortedSet<Int2ObjectMap.Entry<V>> int2ObjectEntrySet (){ throw new UnsupportedOperationException(); }
 
 	public void forEachKeyWrite (IntConsumer action) {
 		try (var __ = write()){ m.keySet().forEach(action); }
@@ -204,5 +236,15 @@ public class SynchronizedInt2ObjLinkedHashMap<V> implements Int2ObjectSortedMap<
 	@Override
 	public V put (int key, V value) {
 		try (var __ = write()){ return m.put(key, value); }
+	}
+
+	@Override
+	public V remove (int key) {
+		try (var __ = write()){ return m.remove(key); }
+	}
+
+	@Override  @Deprecated
+	public V remove (Object key) {
+		try (var __ = write()){ return m.remove(key); }
 	}
 }

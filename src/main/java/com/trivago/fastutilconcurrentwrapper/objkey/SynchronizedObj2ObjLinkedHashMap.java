@@ -134,12 +134,17 @@ public class SynchronizedObj2ObjLinkedHashMap<K,V> implements Object2ObjectSorte
 		}
 	}
 
+	/** Full copy ~ snapshot! */
+	@Override
+	public ObjectSortedSet<Object2ObjectMap.Entry<K,V>> object2ObjectEntrySet (){
+		return new ObjectLinkedOpenHashSet<>(m.object2ObjectEntrySet());
+	}
+
 	@Override public void defaultReturnValue (V rv){ throw new UnsupportedOperationException(); }
 	@Override public @Nullable V defaultReturnValue (){ return null; }
 	@Override public Object2ObjectSortedMap<K,V> subMap (K fromKey, K toKey){ throw new UnsupportedOperationException(); }
 	@Override public Object2ObjectSortedMap<K,V> headMap (K toKey){ throw new UnsupportedOperationException(); }
 	@Override public Object2ObjectSortedMap<K,V> tailMap (K fromKey){ throw new UnsupportedOperationException(); }
-	@Override public ObjectSortedSet<Object2ObjectMap.Entry<K,V>> object2ObjectEntrySet (){ throw new UnsupportedOperationException(); }
 
 	public void forEachKeyWrite (Consumer<K> action) {
 		try (var __ = write()){ m.keySet().forEach(action); }

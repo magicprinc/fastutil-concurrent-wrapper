@@ -306,10 +306,16 @@ class SynchronizedObj2ObjLinkedHashMapTest {
 	}
 
 	@Test
+	void _toString () {
+		var m = new SynchronizedObj2ObjLinkedHashMap<Object,Object>();
+		m.put(1L, "One");
+		assertEquals("{1=>One}", m.toString());
+	}
+
+	@Test
 	void testUnsupportedOperations() {
 		assertThrows(UnsupportedOperationException.class, () -> map.subMap("a", "b"));
 		assertThrows(UnsupportedOperationException.class, () -> map.headMap("a"));
 		assertThrows(UnsupportedOperationException.class, () -> map.tailMap("a"));
-		assertThrows(UnsupportedOperationException.class, () -> map.object2ObjectEntrySet());
 	}
 }
