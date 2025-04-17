@@ -3,14 +3,17 @@ package com.trivago.fastutilconcurrentwrapper.longkey;
 import com.trivago.fastutilconcurrentwrapper.PrimitiveConcurrentMap;
 import com.trivago.fastutilconcurrentwrapper.PrimitiveKeyMap;
 import com.trivago.fastutilconcurrentwrapper.util.PaddedLock;
+import com.trivago.fastutilconcurrentwrapper.util.SmartIterator;
+import com.trivago.fastutilconcurrentwrapper.util.SmartLongIterator;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
+import it.unimi.dsi.fastutil.objects.ObjectCollections;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.jctools.maps.NonBlockingHashMapLong;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentMap;
@@ -20,6 +23,8 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.LongConsumer;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  Similar to {@link ConcurrentLongObjectMap}, but backed with NonBlockingHashMapLong ⇒ non-blocking reads 🚀
@@ -33,7 +38,7 @@ import java.util.function.LongConsumer;
  @see NBHMLCacheExpirer
 */
 @SuppressWarnings("LockAcquiredButNotSafelyReleased")
-public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, Long2ObjectMap<E>, PrimitiveKeyMap {
+public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, Long2ObjectMap<E>, PrimitiveKeyMap, Iterable<Long> {
 	final NonBlockingHashMapLong<E> m;
 	/** @see com.google.common.util.concurrent.Striped#lock(int) */
 	final PaddedLock[] s;
@@ -174,7 +179,7 @@ public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, 
 	}
 
 	/** @see NonBlockingHashMapLong.IteratorLong */
-	public static class StripedLongIterator implements LongIterator {
+	public static class StripedLongIterator implements SmartLongIterator {
 		private final StripedNonBlockingHashMapLong<?> owner;
 		private final NonBlockingHashMapLong<?>.IteratorLong it;
 		private long seenKey;// ^ safe for concurrent
@@ -191,8 +196,6 @@ public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, 
 				it.remove();
 			}
 		}
-		/** <strong>Auto-box</strong> and return the next key. */
-		@Override @Deprecated public Long next (){ return nextLong(); }
 		/** Return the next key as a primitive {@code long}. */
 		@Override
 		public long nextLong () {
@@ -203,7 +206,7 @@ public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, 
 		@Override public boolean hasNext (){ return it.hasNext(); }
 	}//StripedLongIterator
 
-	public StripedLongIterator keys (){ return new StripedLongIterator(this); }
+	@Override public StripedLongIterator iterator (){ return new StripedLongIterator(this); }
 
 	public void forEachKey (LongConsumer action) {
 		var it = (NonBlockingHashMapLong<E>.IteratorLong) m.keys();
@@ -219,10 +222,110 @@ public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, 
 	}
 	public long[] keySetLong (){ return m.keySetLong(); }
 
-	/** @see NonBlockingHashMapLong#values()  */
+	/**
+	 @see NonBlockingHashMapLong#values()
+	 @see ObjectCollections#unmodifiable(ObjectCollection)
+	 */
 	@Override
 	public ObjectCollection<E> values () {
-		throw new UnsupportedOperationException();
+		var collection = m.values();
+		return new ObjectCollection<>(){
+			@Override
+			public boolean add (E k) {
+				throw new UnsupportedOperationException();
+			}
+			@Override
+			public boolean remove (Object k) {
+				throw new UnsupportedOperationException();
+			}
+			@Override
+			public int size () {
+				return collection.size();
+			}
+			@Override
+			public boolean isEmpty () {
+				return collection.isEmpty();
+			}
+			@Override
+			public boolean contains (Object o) {
+				return collection.contains(o);
+			}
+
+			@Override
+			public SmartIterator<E> iterator() {
+				var it = collection.iterator();
+				return new SmartIterator<>(){
+					@Override public boolean hasNext (){ return it.hasNext(); }
+					@Override public E next (){ return it.next(); }
+					@Override public String toString (){ return it.toString(); }
+				};
+			}
+
+			@Override public SmartIterator<E> spliterator (){ return iterator(); }
+			@Override public Stream<E> stream (){ return iterator().stream(); }
+			@Override public Stream<E> parallelStream (){ return iterator().stream().parallel(); }
+
+			@Override
+			public void clear() {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public <T> T[] toArray (T[] a) {
+				return collection.toArray(a);
+			}
+
+			@Override
+			public Object[] toArray() {
+				return collection.toArray();
+			}
+
+			@Override
+			public void forEach(final Consumer<? super E> action) {
+				collection.forEach(action);
+			}
+
+			@Override
+			public boolean containsAll(Collection<?> c) {
+				return collection.containsAll(c);
+			}
+
+			@Override
+			public boolean addAll(Collection<? extends E> c) {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public boolean removeAll(Collection<?> c) {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public boolean retainAll(Collection<?> c) {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public boolean removeIf (Predicate<? super E> filter) {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public String toString() {
+				return collection.toString();
+			}
+
+			@Override
+			public int hashCode() {
+				return collection.hashCode();
+			}
+
+			@Override
+			public boolean equals (Object o) {
+				if (o == this) return true;
+				return collection.equals(o);
+			}
+		};
 	}
 
 	@Override
@@ -304,8 +407,8 @@ public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, 
 		}
 	}
 
-
-	public abstract static class NBHMLCacheExpirer<E> implements LongConsumer, Function<Long2ObjectMap.Entry<E>,Object>{
+	/** Simple template to add an expiration support */
+	public abstract static class NBHMLCacheExpirer<E> {
 		protected final StripedNonBlockingHashMapLong<E> cacheMap;
 
 		public NBHMLCacheExpirer (StripedNonBlockingHashMapLong<E> cacheMap){ this.cacheMap = cacheMap; }//new
@@ -333,35 +436,37 @@ public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, 
 
 		 @see org.springframework.scheduling.annotation.Scheduled
 		 @see java.util.Set#removeIf
+
+		 @see StripedNonBlockingHashMapLong#forEachKey(LongConsumer)
+		 @see StripedNonBlockingHashMapLong#withLock
 		*/
-		public void expire () {
+		public long expire () {
 			long initialExpiredCount = expiredCount;
 			beforeExpire();
-			cacheMap.forEachKey(this);// see accept(long longKey)
-			reportExpireResult(initialExpiredCount);
+			try {
+				for (var it = (NonBlockingHashMapLong<E>.IteratorLong) cacheMap.m.keys(); it.hasNext();){
+					long longKey = it.nextLong();
+					E value = cacheMap.get(longKey);
+					if (value != null && isExpired(longKey, value)){// first "light" check: value could be gone already #1
+
+						try (var __ = cacheMap.write(longKey)){
+							value = cacheMap.get(longKey);// can be gone already #2
+							if (value != null && isExpired(longKey, value)){// double check idiom
+								expiredCount++;
+								postProcessExpiredEntry(longKey, value);
+								it.remove();// expired ⇒ remove: we inside the write lock ⇒ allowed
+							}
+						}
+
+					}//#1
+				}//f keys
+			} catch (CancellationException ignored){}
+			return afterExpire(initialExpiredCount);
 		}
-
-		/** @see #forEachKey(LongConsumer) */
-		@Override
-		public void accept (long longKey) {
-			E value = cacheMap.get(longKey);// can be gone already
-			if (value != null && isExpired(longKey, value))// first "light" check
-					cacheMap.withLock(longKey, this);
-		}//LongConsumer#accept for expire → forEachKey
-
-		/** @see #withLock(long, Function)  */
-		@Override
-		public @Nullable Object apply (Long2ObjectMap.Entry<E> e) {
-			if (e.getValue() != null && isExpired(e.getLongKey(), e.getValue())){// double check idiom
-				expiredCount++;
-				postProcessExpiredEntry(e.getLongKey(), e.getValue());
-				e.setValue(null);// expired ⇒ remove
-			}
-			return null;
-		}//Function#apply for LongConsumer#accept → withLock
-
-		private void reportExpireResult (long initialExpiredCount) {
+		/** e.g. reportExpireResult */
+		protected long afterExpire (long initialExpiredCount) {
 			//LOGGER.debug("{}.expire entries: {} / {}, expiredSinceStart: {}", beanName, expiredCount - initialExpiredCount, cacheMap.size(), expiredCount);
+			return expiredCount - initialExpiredCount;
 		}
 	}
 }

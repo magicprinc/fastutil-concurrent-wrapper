@@ -10,6 +10,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -272,5 +274,43 @@ class StripedNonBlockingHashMapLongTest {
 		assertEquals(3, r);
 		assertNull(map.get(2));
 		assertFalse(map.containsKey(2));
+	}
+
+	@Test
+	void _expire () {
+		var now = new AtomicLong();
+		var cache = new StripedNonBlockingHashMapLong<String>(100, true, 8);
+		var expirer = new StripedNonBlockingHashMapLong.NBHMLCacheExpirer<>(cache){
+			@Override
+			protected boolean isExpired (long key, String value) {
+				return key < now.get();
+			}
+		};
+
+		cache.put(1, "One");
+		cache.put(2, "Two");
+		cache.put(3, "Three");
+		cache.put(4, "Four");
+		cache.put(5, "Five");
+		assertEquals(5, cache.size());
+
+		assertEquals(0, expirer.expire());
+		assertEquals(5, cache.size());
+		assertEquals("One, Two, Three, Four, Five", cache.iterator().stream().sorted().map(cache::get).collect(Collectors.joining(", ")));
+
+		now.set(2);
+		assertEquals(1, expirer.expire());
+		assertEquals(4, cache.size());
+		assertEquals("Two, Three, Four, Five", cache.iterator().stream().sorted().map(cache::get).collect(Collectors.joining(", ")));
+
+		now.set(4);
+		assertEquals(2, expirer.expire());
+		assertEquals(2, cache.size());
+		assertEquals("Four, Five", cache.iterator().stream().sorted().map(cache::get).collect(Collectors.joining(", ")));
+
+		now.set(Long.MAX_VALUE);
+		assertEquals(2, expirer.expire());
+		assertEquals(0, cache.size());
+		assertEquals("", cache.iterator().stream().sorted().map(cache::get).collect(Collectors.joining(", ")));
 	}
 }
