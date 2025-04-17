@@ -133,6 +133,4 @@ Memory 16 GB 2400 MHz DDR4
 ## Maintainers
 A-Z surname order
 
-- [@mchernyakov](https://github.com/mchernyakov)
-- [@erdoganf](https://github.com/erdoganf)
-- [@sarveswaran-m](https://github.com/sarveswaran-m)
+- [@ьфпшсзкштс]([https://github.com/mchernyakov](https://github.com/magicprinc))
