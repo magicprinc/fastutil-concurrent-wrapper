@@ -2,7 +2,7 @@ package com.trivago.fastutilconcurrentwrapper.intkey;
 
 import com.trivago.fastutilconcurrentwrapper.objkey.SynchronizedObj2ObjLinkedHashMap;
 import com.trivago.fastutilconcurrentwrapper.util.CloseableLock;
-import com.trivago.fastutilconcurrentwrapper.util.PaddedReadWriteLock;
+import com.trivago.fastutilconcurrentwrapper.util.CloseableReadWriteLock;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -31,7 +31,7 @@ import java.util.function.ObjIntConsumer;
 */
 public class SynchronizedInt2ObjLinkedHashMap<V> implements Int2ObjectSortedMap<V> {
 	protected final Int2ObjectLinkedOpenHashMap<V> m;
-	protected final PaddedReadWriteLock lock = new PaddedReadWriteLock();
+	protected final CloseableReadWriteLock lock = new CloseableReadWriteLock();
 
 	public SynchronizedInt2ObjLinkedHashMap (int expected, float f) {
 		m = new Int2ObjectLinkedOpenHashMap<>(expected, f);

@@ -1,9 +1,9 @@
 package com.trivago.fastutilconcurrentwrapper;
 
 import com.trivago.fastutilconcurrentwrapper.util.CloseableLock;
-import com.trivago.fastutilconcurrentwrapper.util.PaddedReadWriteLock;
+import com.trivago.fastutilconcurrentwrapper.util.CloseableReadWriteLock;
 import it.unimi.dsi.fastutil.Function;
-import it.unimi.dsi.fastutil.HashCommon;
+import jakarta.validation.constraints.Positive;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -14,15 +14,16 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
     private final int numBuckets;
-    private final PaddedReadWriteLock[] locks;
+    private final CloseableReadWriteLock.Padded[] locks;
 
-    protected PrimitiveConcurrentMap (int numBuckets) {
+    @SuppressWarnings({"resource", "ConstantValue"})
+		protected PrimitiveConcurrentMap (@Positive int numBuckets) {
         if (numBuckets < 1 || numBuckets > 100_000_000)
             throw new IllegalArgumentException("numBuckets must be between 1 and 100_000_000, but: "+ numBuckets);
         this.numBuckets = numBuckets;
-        this.locks = new PaddedReadWriteLock[numBuckets];
+        this.locks = new CloseableReadWriteLock.Padded[numBuckets];
         for (int i = 0; i < numBuckets; i++)
-            locks[i] = new PaddedReadWriteLock();
+            locks[i] = new CloseableReadWriteLock.Padded();
     }//new
 
     /** Lock must be held! */
@@ -74,19 +75,14 @@ public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
     }
 
     protected int getBucket (long key) {
-        int hash = Long.hashCode(key);
-        return bucket(hash, numBuckets);
+        return PrimitiveKeyMap.bucket(key, numBuckets);
     }
 
     protected int getBucket (int key) {
-        return bucket(key, numBuckets);// Integer.hashCode(key) == key
+        return PrimitiveKeyMap.bucket(key, numBuckets);// Integer.hashCode(key) == key
     }
 
     protected int getBucket (Object key) {
-        return key != null ? bucket(key.hashCode(), numBuckets) : 0;
-    }
-
-    public static int bucket (int hash, int bucketSize) {
-        return Math.abs(HashCommon.mix(hash) % bucketSize);
+        return PrimitiveKeyMap.bucket(key, numBuckets);
     }
 }

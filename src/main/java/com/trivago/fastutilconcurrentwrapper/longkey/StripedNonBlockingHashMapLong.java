@@ -1,6 +1,5 @@
 package com.trivago.fastutilconcurrentwrapper.longkey;
 
-import com.trivago.fastutilconcurrentwrapper.PrimitiveConcurrentMap;
 import com.trivago.fastutilconcurrentwrapper.PrimitiveKeyMap;
 import com.trivago.fastutilconcurrentwrapper.util.PaddedLock;
 import com.trivago.fastutilconcurrentwrapper.util.SmartIterator;
@@ -55,7 +54,7 @@ public class StripedNonBlockingHashMapLong<E> implements ConcurrentMap<Long,E>, 
 
 	/** @see com.google.common.util.concurrent.Striped#get(Object) */
 	protected PaddedLock write (long key) {
-		var lock = s[PrimitiveConcurrentMap.bucket(Long.hashCode(key), s.length)];
+		var lock = s[PrimitiveKeyMap.bucket(key, s.length)];
 		lock.lock();
 		return lock;
 	}
