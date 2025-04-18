@@ -82,9 +82,10 @@ dependencies {
 //	errorprone("com.google.errorprone:error_prone_core:2.36.0")
 //	jmhAnnotationProcessor "com.google.errorprone:error_prone_core:2.36.0"
 
-	api 'it.unimi.dsi:fastutil:latest.release'
+	api('it.unimi.dsi:fastutil:latest.release')
 	compileOnly('org.jctools:jctools-core:latest.release')
 	compileOnly('org.jspecify:jspecify:latest.release')
+	compileOnly('jakarta.validation:jakarta.validation-api:latest.release')
 
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.+'
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.+'
