@@ -13,14 +13,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  @see org.jctools.maps.NonBlockingHashMapLong
  */
 public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
-    private final int numBuckets;
     private final CloseableReadWriteLock.Padded[] locks;
 
     @SuppressWarnings({"resource", "ConstantValue"})
 		protected PrimitiveConcurrentMap (@Positive int numBuckets) {
         if (numBuckets < 1 || numBuckets > 100_000_000)
             throw new IllegalArgumentException("numBuckets must be between 1 and 100_000_000, but: "+ numBuckets);
-        this.numBuckets = numBuckets;
         this.locks = new CloseableReadWriteLock.Padded[numBuckets];
         for (int i = 0; i < numBuckets; i++)
             locks[i] = new CloseableReadWriteLock.Padded();
@@ -45,7 +43,7 @@ public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
     @Override
 		public int size () {
         int sum = 0;
-        for (int i = 0; i < numBuckets; i++){
+        for (int i = 0; i < locks.length; i++){
             try (var __ = readAt(i)){
                 sum += mapAt(i).size();
             }
@@ -55,7 +53,7 @@ public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
 
     @Override
 		public boolean isEmpty () {
-        for (int i = 0; i < numBuckets; i++) {
+        for (int i = 0; i < locks.length; i++) {
             try (var __ = readAt(i)){
                 boolean nonEmpty = mapAt(i).size() > 0;
                 if (nonEmpty)
@@ -67,7 +65,7 @@ public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
 
     @Override
     public void clear () {
-        for (int i = 0; i < numBuckets; i++){
+        for (int i = 0; i < locks.length; i++){
             try (var __ = writeAt(i)){
                 mapAt(i).clear();
             }
@@ -75,14 +73,14 @@ public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
     }
 
     protected int getBucket (long key) {
-        return PrimitiveKeyMap.bucket(key, numBuckets);
+			return PrimitiveKeyMap.bucket(key, locks.length);
     }
 
     protected int getBucket (int key) {
-        return PrimitiveKeyMap.bucket(key, numBuckets);// Integer.hashCode(key) == key
+			return PrimitiveKeyMap.bucket(key, locks.length);// Integer.hashCode(key) == key
     }
 
     protected int getBucket (Object key) {
-        return PrimitiveKeyMap.bucket(key, numBuckets);
+			return PrimitiveKeyMap.bucket(key, locks.length);
     }
 }
