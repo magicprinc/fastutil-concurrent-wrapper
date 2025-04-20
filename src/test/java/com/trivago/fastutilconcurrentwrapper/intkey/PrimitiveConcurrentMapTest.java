@@ -66,4 +66,11 @@ class PrimitiveConcurrentMapTest {
 		assertEquals(59_985, PrimitiveKeyMap.bucket(Long.valueOf(Integer.MAX_VALUE), 100_000));
 		assertEquals(50_880, PrimitiveKeyMap.bucket(Long.valueOf(Long.MAX_VALUE), 100_000));
 	}
+
+	@Test
+	void buildLongKey () {
+		assertEquals(0, PrimitiveKeyMap.compoundKey(0,0));
+		assertEquals(Integer.MIN_VALUE & 0xFFFFFFFFL, PrimitiveKeyMap.compoundKey(0,Integer.MIN_VALUE));
+		assertEquals(0x8000_0000_0000_0000L, PrimitiveKeyMap.compoundKey(Integer.MIN_VALUE,0));
+	}
 }

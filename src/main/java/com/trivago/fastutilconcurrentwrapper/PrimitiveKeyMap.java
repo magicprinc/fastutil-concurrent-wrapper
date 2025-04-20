@@ -44,4 +44,17 @@ public interface PrimitiveKeyMap {
 		int intHash = Long.hashCode(hashOrKey);
 		return Math.abs(HashCommon.mix(intHash) % bucketSize);
 	}
+
+	/**
+	 * Combined two 32-bit keys into a 64-bit compound.
+
+	 https://github.com/aeron-io/agrona/blob/master/agrona/src/main/java/org/agrona/collections/Hashing.java
+
+	 * @param keyHi to make the upper bits
+	 * @param keyLo to make the lower bits
+	 * @return the compound key
+	 */
+	static long compoundKey (int keyHi, final int keyLo) {
+		return ((long)keyHi << 32) | (keyLo & 0xFfFf_FfFfL);
+	}
 }
