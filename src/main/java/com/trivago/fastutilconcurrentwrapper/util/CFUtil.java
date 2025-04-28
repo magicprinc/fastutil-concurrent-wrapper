@@ -25,7 +25,7 @@ public final class CFUtil {
 	 Get positive, quite `random` bucket index between 0 and bucketSize-1 for any key
 	 Fast. Safe for negative keys (including Long.MIN_VALUE, Integer.MIN_VALUE)
 
-	 FastUtil has ❌ HashCommon#mix(long), but we use ✅ Long.hashCode + mix(int) because:
+	 FastUtil has ❌ HashCommon#mix(long), but we use ✅ Long.hashCode + mix(int) because with mix(long):
 
 	 mix(1L) ≠ mix(1) → it is against common knowledge and expectations
 	 mix(1L) ≠ mix(Long.valueOf(1L)) → 😱
