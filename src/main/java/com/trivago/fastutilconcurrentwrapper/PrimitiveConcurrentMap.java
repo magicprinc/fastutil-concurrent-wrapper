@@ -1,5 +1,6 @@
 package com.trivago.fastutilconcurrentwrapper;
 
+import com.trivago.fastutilconcurrentwrapper.util.CFUtil;
 import com.trivago.fastutilconcurrentwrapper.util.CloseableLock;
 import com.trivago.fastutilconcurrentwrapper.util.CloseableReadWriteLock;
 import it.unimi.dsi.fastutil.Function;
@@ -73,14 +74,14 @@ public abstract class PrimitiveConcurrentMap<K,V> implements PrimitiveKeyMap {
     }
 
     protected int getBucket (long key) {
-			return PrimitiveKeyMap.bucket(key, locks.length);
+			return CFUtil.bucket(key, locks.length);
     }
 
     protected int getBucket (int key) {
-			return PrimitiveKeyMap.bucket(key, locks.length);// Integer.hashCode(key) == key
+			return CFUtil.bucket(key, locks.length);// Integer.hashCode(key) == key
     }
 
     protected int getBucket (Object key) {
-			return PrimitiveKeyMap.bucket(key, locks.length);
+			return CFUtil.bucket(key, locks.length);
     }
 }
