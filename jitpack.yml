@@ -2,7 +2,7 @@ jdk:
   - openjdk17
 
 gradle:
-  - version: 8.13
+  - version: 8.14.3
 
 install:
   - ./gradlew clean build publishToMavenLocal --console=plain --continue --warning-mode all

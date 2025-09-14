@@ -1,7 +1,7 @@
 plugins {
 	id "idea"
 	id "java-library"
-//	id "net.ltgt.errorprone" version "latest.release"
+	id "net.ltgt.errorprone" version "latest.release"
 	id("me.champeau.jmh") version "latest.release"
 	id "com.vanniktech.maven.publish" version "latest.release" //? id 'maven-publish'
 }
@@ -23,14 +23,15 @@ tasks.withType(JavaCompile).configureEach { // ? gradle.projectsEvaluated {
 	options.release.set(17)
 	options.deprecation = true
 
-//	options.errorprone {
-//		enabled = true // <<<!!! You can disable Error-Prone here!
-//		disableWarningsInGeneratedCode = true
-//		excludedPaths = ".*/build/(generated|test).*/.*"
-//		disable("UnusedVariable")
-//		disable("MissingSummary")
-//		errorproneArgs = ["-XepExcludedPaths:.*/test/.*"]
-//	}
+	options.errorprone {
+		enabled = true
+		disableWarningsInGeneratedCode = true
+		excludedPaths = ".*/(generated|test).*/.*"
+		disable("UnusedVariable")
+		disable("MissingSummary")
+		disable("StringConcatToTextBlock")
+		errorproneArgs = ["-XepExcludedPaths:.*/test/.*"]
+	}
 }
 
 mavenPublishing {
@@ -79,7 +80,7 @@ sourceSets {
 }
 
 dependencies {
-//	errorprone("com.google.errorprone:error_prone_core:2.36.0")
+	errorprone("com.google.errorprone:error_prone_core:latest.release")
 //	jmhAnnotationProcessor "com.google.errorprone:error_prone_core:2.36.0"
 
 	api('it.unimi.dsi:fastutil:latest.release')
