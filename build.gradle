@@ -3,7 +3,6 @@ plugins {
 	id "java-library"
 	id "io.freefair.lombok" version "latest.release"
 	id "net.ltgt.errorprone" version "latest.release"
-	id("me.champeau.jmh") version "latest.release"
 	id "com.vanniktech.maven.publish" version "latest.release"//? id 'maven-publish'
 	id "org.gradlex.reproducible-builds" version "latest.release"// https://github.com/gradlex-org/reproducible-builds
 }
@@ -73,14 +72,6 @@ mavenPublishing {
 	}
 }
 
-sourceSets {
-	jmh {
-		java.srcDirs = ['src/jmh/java']
-		resources.srcDirs = ['src/jmh/resources']
-		compileClasspath += sourceSets.main.runtimeClasspath
-	}
-}
-
 dependencies {
 	errorprone("com.google.errorprone:error_prone_core:latest.release")
 	// jmhAnnotationProcessor "com.google.errorprone:error_prone_core:2.36.0"
@@ -125,12 +116,6 @@ publishing {// https://docs.gradle.org/current/userguide/publishing_maven.html
 //			suppressPomMetadataWarningsFor('runtimeElements')
 //		}
 //	}
-}
-
-// ./gradlew jmh
-jmh {
-	jvmArgs = ["-Xms3072m","-Xmx3072m"]
-	duplicateClassesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 lombok { version = "latest.release" }

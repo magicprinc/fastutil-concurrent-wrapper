@@ -1,11 +1,9 @@
 plugins {
 	id "idea" // to download source- and javadoc jars
 	id "java-library"
+	id "application"
 	id "io.freefair.lombok" version "latest.release"
-	id "net.ltgt.errorprone" version "latest.release"
 	id("me.champeau.jmh") version "latest.release"
-	id "com.vanniktech.maven.publish" version "latest.release"//? id 'maven-publish'
-	id "org.gradlex.reproducible-builds" version "latest.release"// https://github.com/gradlex-org/reproducible-builds
 }
 
 allprojects {
@@ -24,53 +22,6 @@ tasks.withType(JavaCompile).configureEach { // ? gradle.projectsEvaluated {
 	options.compilerArgs.addAll(['-Xlint:all,-serial', '-parameters'])
 	options.release.set(17)
 	options.deprecation = true
-
-	options.errorprone {
-		enabled = true
-		disableWarningsInGeneratedCode = true
-		excludedPaths = ".*/(generated|test).*/.*"
-		disable("UnusedVariable")
-		disable("MissingSummary")
-		disable("StringConcatToTextBlock")
-		errorproneArgs = ["-XepExcludedPaths:.*/test/.*"]
-	}
-}
-
-mavenPublishing {
-	pom {
-		name = "fastutil-concurrent-wrapper"
-		description = "Set of concurrent wrappers around fastutil primitive maps."
-		url = "https://github.com/trivago/fastutil-concurrent-wrapper"
-		licenses {
-			license {
-				name = "The Apache Software License, Version 2.0"
-				url = "https://opensource.org/licenses/Apache-2.0"
-				distribution = "repo"
-			}
-		}
-		developers {
-			developer {
-				id = "mchernyakov"
-				name = "Mikhail Chernyakov"
-				url = "https://github.com/mchernyakov"
-			}
-			developer {
-				id = "erdoganf"
-				name = "Fehim Erdogan"
-				url = "https://github.com/erdoganf"
-			}
-			developer {
-				id = "sarveswaran-m"
-				name = "Sarveswaran Meenakshisundaram"
-				url = "https://github.com/sarveswaran-m"
-			}
-		}
-		scm {
-			url = "https://github.com/magicprinc/fastutil-concurrent-wrapper"
-			connection = "scm:git:https://github.com/magicprinc/fastutil-concurrent-wrapper"
-			developerConnection = "scm:git:https://github.com/magicprinc/fastutil-concurrent-wrapper"
-		}
-	}
 }
 
 sourceSets {
@@ -82,13 +33,19 @@ sourceSets {
 }
 
 dependencies {
-	errorprone("com.google.errorprone:error_prone_core:latest.release")
-	// jmhAnnotationProcessor "com.google.errorprone:error_prone_core:2.36.0"
-
+	implementation project(":")
 	api('it.unimi.dsi:fastutil:latest.release')
 	compileOnly('org.jctools:jctools-core:latest.release')
 	compileOnly('org.jspecify:jspecify:latest.release')
 	compileOnly('jakarta.validation:jakarta.validation-api:latest.release')
+
+	jmh 'org.openjdk.jmh:jmh-core:latest.release'
+	jmh 'org.openjdk.jmh:jmh-generator-annprocess:latest.release'
+	jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:latest.release'
+	annotationProcessor('org.openjdk.jmh:jmh-generator-annprocess:latest.release')
+
+	implementation 'org.openjdk.jmh:jmh-core:latest.release'
+	implementation 'org.openjdk.jmh:jmh-generator-annprocess:latest.release'
 
 	// TEST
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.12.+'
@@ -99,32 +56,6 @@ dependencies {
 
 test {
 	useJUnitPlatform()
-}
-
-jar {
-	archiveBaseName.set('fastutil-concurrent-wrapper')
-}
-
-java {
-	withSourcesJar()
-}
-
-// ./gradlew publish --no-daemon --no-parallel
-// ./gradlew closeAndReleaseRepository
-publishing {// https://docs.gradle.org/current/userguide/publishing_maven.html
-	repositories {
-		maven {
-			def releasesRepoUrl = "$buildDir/repos/releases"
-			def snapshotsRepoUrl = "$buildDir/repos/snapshots"
-			url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-		}
-	}
-//	publications {
-//		maven(MavenPublication) {
-//			from components.java
-//			suppressPomMetadataWarningsFor('runtimeElements')
-//		}
-//	}
 }
 
 // ./gradlew jmh
