@@ -82,14 +82,27 @@ dependencies {
 	compileOnly('jakarta.validation:jakarta.validation-api:latest.release')
 
 	// TEST
-	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.12.+'
-	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.12.+'
-	//testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.12.+'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.+'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.13.+'
+	//testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.13.+'
 	testImplementation('org.jctools:jctools-core:latest.release')
 }
 
 test {
 	useJUnitPlatform()
+	enableAssertions = true
+	maxHeapSize = "2G"
+	workingDir project.projectDir // Set the working directory to the subproject directory, not current dir
+	systemProperty("user.dir", project.projectDir) // to be sure ^
+	println "[INFO] ${project.name}.workingDir == $workingDir"
+}
+
+testing {
+	suites {
+		test(JvmTestSuite) {
+			useJUnitJupiter()
+		}
+	}
 }
 
 jar {

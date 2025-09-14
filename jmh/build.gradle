@@ -35,9 +35,9 @@ sourceSets {
 dependencies {
 	implementation project(":")
 	api('it.unimi.dsi:fastutil:latest.release')
-	compileOnly('org.jctools:jctools-core:latest.release')
-	compileOnly('org.jspecify:jspecify:latest.release')
-	compileOnly('jakarta.validation:jakarta.validation-api:latest.release')
+	implementation('org.jctools:jctools-core:latest.release')
+	implementation('org.jspecify:jspecify:latest.release')
+	implementation('jakarta.validation:jakarta.validation-api:latest.release')
 
 	jmh 'org.openjdk.jmh:jmh-core:latest.release'
 	jmh 'org.openjdk.jmh:jmh-generator-annprocess:latest.release'
@@ -48,14 +48,8 @@ dependencies {
 	implementation 'org.openjdk.jmh:jmh-generator-annprocess:latest.release'
 
 	// TEST
-	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.12.+'
-	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.12.+'
-	//testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.12.+'
-	testImplementation('org.jctools:jctools-core:latest.release')
-}
-
-test {
-	useJUnitPlatform()
+	implementation 'org.junit.jupiter:junit-jupiter-api:5.13.+'
+	runtimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.13.+'
 }
 
 // ./gradlew jmh
