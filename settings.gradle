@@ -1,1 +1,3 @@
 rootProject.name = 'fastutil-concurrent-wrapper'
+
+include(":jmh")
