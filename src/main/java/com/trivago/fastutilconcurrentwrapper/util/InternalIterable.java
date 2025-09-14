@@ -11,6 +11,8 @@ import java.util.function.Consumer;
  It is hard to implement Iterator for external iteration (it has state, can't have lock).
  It is much easier to implement an internal one.
 
+ Actual implementation must also have type-specific getter for current element, e.g.: long get()
+
  @see java.util.Iterator
  @see java.lang.Iterable
  @see java.util.Spliterator
@@ -24,6 +26,7 @@ public interface InternalIterable extends AutoCloseable {
 			initCause(null);
 			setStackTrace(CFUtil.EMPTY_STACK_TRACE);
 		}
+		@SuppressWarnings("OverrideThrowableToString")
 		@Override public String toString (){ return "CancellationException: "+getMessage(); }
 	};
 
@@ -31,6 +34,7 @@ public interface InternalIterable extends AutoCloseable {
 		{
 			setStackTrace(CFUtil.EMPTY_STACK_TRACE);
 		}
+		@SuppressWarnings("OverrideThrowableToString")
 		@Override public String toString (){ return "IllegalArgumentException: "+getMessage(); }
 	};
 
@@ -48,6 +52,7 @@ public interface InternalIterable extends AutoCloseable {
 		throw new UnsupportedOperationException("remove");
 	}
 
+	/// current position 0..size-1
 	default long index () {
 		throw new UnsupportedOperationException("index");
 	}

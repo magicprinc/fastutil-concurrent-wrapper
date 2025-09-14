@@ -1,5 +1,6 @@
 package com.trivago.fastutilconcurrentwrapper.util;
 
+import com.trivago.fastutilconcurrentwrapper.support.ReadWriteLockCollection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

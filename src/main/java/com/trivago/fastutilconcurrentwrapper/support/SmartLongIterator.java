@@ -1,4 +1,4 @@
-package com.trivago.fastutilconcurrentwrapper.util;
+package com.trivago.fastutilconcurrentwrapper.support;
 
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSpliterator;

@@ -1,10 +1,10 @@
 package com.trivago.fastutilconcurrentwrapper.longkey;
 
 import com.trivago.fastutilconcurrentwrapper.PrimitiveKeyMap;
+import com.trivago.fastutilconcurrentwrapper.support.SmartIterator;
+import com.trivago.fastutilconcurrentwrapper.support.SmartLongIterator;
 import com.trivago.fastutilconcurrentwrapper.util.CFUtil;
 import com.trivago.fastutilconcurrentwrapper.util.PaddedLock;
-import com.trivago.fastutilconcurrentwrapper.util.SmartIterator;
-import com.trivago.fastutilconcurrentwrapper.util.SmartLongIterator;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;

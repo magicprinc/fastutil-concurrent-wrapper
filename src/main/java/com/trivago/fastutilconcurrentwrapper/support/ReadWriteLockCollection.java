@@ -1,5 +1,6 @@
-package com.trivago.fastutilconcurrentwrapper.util;
+package com.trivago.fastutilconcurrentwrapper.support;
 
+import com.trivago.fastutilconcurrentwrapper.util.CloseableLock;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 
 import java.io.IOException;
@@ -188,7 +189,7 @@ public class ReadWriteLockCollection<E> implements ObjectCollection<E>, Serializ
 		try (var __ = write()){ return c.addAll(coll); }
 	}
 
-	@SafeVarargs
+	@SafeVarargs  @SuppressWarnings("varargs")
 	public final boolean addAll (E... elements) {
 		try (var __ = write()){ return Collections.addAll(c, elements); }
 	}
