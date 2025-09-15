@@ -48,8 +48,10 @@ class PrimitiveConcurrentMapTest {
 	void longsAreSame () {
 		long total = 0, t = System.nanoTime();
 		for (long i = Integer.MIN_VALUE; i <= Integer.MAX_VALUE; i++){
-			assertEquals(CFUtil.bucket(Long.valueOf(i), 4_000_000), CFUtil.bucket(i, 4_000_000));
-			assertEquals(CFUtil.bucket((int)i, 4_000_000), CFUtil.bucket(i, 4_000_000));
+			int hc = CFUtil.bucket(i, 4_000_000);
+			assertEquals(CFUtil.bucket(Long.valueOf(i), 4_000_000), hc);
+			assertEquals(CFUtil.bucket((int)i, 4_000_000), hc);
+			assertTrue(hc >= 0 && hc < 4_000_000);
 			total++;
 		}
 		t = System.nanoTime() - t;
@@ -65,13 +67,22 @@ class PrimitiveConcurrentMapTest {
 		var r = ThreadLocalRandom.current();
 		for (int z = 0; z < 4_000_000; z++){
 			long i = r.nextLong();
-			assertEquals(CFUtil.bucket(Long.valueOf(i), 4_000_000), CFUtil.bucket(i, 4_000_000));
+			int hc = CFUtil.bucket(i, 4_000_000);
+			assertEquals(CFUtil.bucket(Long.valueOf(i), 4_000_000), hc);
+			assertTrue(hc >= 0 && hc < 4_000_000);
+
 			i = Long.MIN_VALUE + z;
-			assertEquals(CFUtil.bucket(Long.valueOf(i), 4_000_000), CFUtil.bucket(i, 4_000_000));
-			assertEquals(CFUtil.bucket(Long.hashCode(i), 4_000_000), CFUtil.bucket(i, 4_000_000));
+			hc = CFUtil.bucket(i, 4_000_000);
+			assertEquals(CFUtil.bucket(Long.valueOf(i), 4_000_000), hc);
+			assertEquals(CFUtil.bucket(Long.hashCode(i), 4_000_000), hc);
+			assertTrue(hc >= 0 && hc < 4_000_000);
+
 			i = Long.MAX_VALUE - z;
-			assertEquals(CFUtil.bucket(Long.valueOf(i), 4_000_000), CFUtil.bucket(i, 4_000_000));
-			assertEquals(CFUtil.bucket(Long.hashCode(i), 4_000_000), CFUtil.bucket(i, 4_000_000));
+			hc = CFUtil.bucket(i, Integer.MAX_VALUE);
+			assertEquals(CFUtil.bucket(Long.valueOf(i), Integer.MAX_VALUE), hc);
+			assertEquals(CFUtil.bucket(Long.hashCode(i), Integer.MAX_VALUE), hc);
+			assertTrue(hc >= 0 && hc < Integer.MAX_VALUE);
+
 			total++;
 		}
 		assertEquals(4_000_000, total);

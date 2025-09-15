@@ -148,7 +148,8 @@ public class JBytes {
 		System.arraycopy(b,0, c,len1,  len2);
 		return c;
 	}
-	/** @see #concatOrSame */
+
+	/** Similar to {@link #concatOrSame}, but if only one array is not empty → returns cloned array */
 	public static byte[] concatClone (byte @Nullable [] a, byte @Nullable [] b) {
 		int len1;
 		if (a == null || (len1 = a.length) <= 0){
@@ -167,6 +168,7 @@ public class JBytes {
 		return c;
 	}
 
+	/** Concat multiple byte arrays */
 	public static byte[] concatMulti (byte @Nullable [] @Nullable ... byteArrays) {
 		if (CFUtil.blankVarargs(byteArrays))
 				return EMPTY_ARRAY;
@@ -207,6 +209,7 @@ public class JBytes {
 	 * All methods in this class will throw an {@linkplain NullPointerException} if {@code null} is
 	 * passed in as a method parameter for a byte array.
 	 * @see java.io.DataOutputStream
+	 * @see java.io.DataInputStream
 	 * @see jdk.internal.util.ByteArray
 	 * @see jdk.internal.util.ByteArrayLittleEndian
 	 */
