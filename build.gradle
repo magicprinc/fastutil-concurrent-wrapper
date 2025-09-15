@@ -83,6 +83,7 @@ dependencies {
 
 	// TEST
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.13.+'
+	testImplementation 'org.junit.platform:junit-platform-launcher:1.13.+'
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.13.+'
 	//testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.13.+'
 	testImplementation('org.jctools:jctools-core:latest.release')
