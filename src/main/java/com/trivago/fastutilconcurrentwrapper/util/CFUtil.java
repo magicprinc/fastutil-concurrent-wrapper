@@ -1,6 +1,7 @@
 package com.trivago.fastutilconcurrentwrapper.util;
 
 import it.unimi.dsi.fastutil.HashCommon;
+import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AccessLevel;
@@ -74,5 +75,28 @@ public final class CFUtil {
 	 */
 	public static long compoundKey (int keyHi, int keyLo) {
 		return ((long)keyHi << 32) | (keyLo & 0xFfFf_FfFfL);
+	}
+
+	/**
+	 Is varargs empty?
+	 @see #safeVarArgs
+	 */
+	public static boolean blankVarargs (@Nullable Object @Nullable [] args) {
+		return args == null
+				|| args.length == 0
+				|| (args.length == 1 && args[0] == null);
+	}
+
+	/// Fix usual varargs mistakes (but type is lost)
+	/// ~ Considers an Object array passed into a varargs parameter as collection of arguments rather than as single argument).
+	/// @see #blankVarargs
+	public static Object @Nullable[] safeVarArgs (@Nullable Object @Nullable[] varArgs) {
+		if (varArgs == null)
+				return ObjectArrays.EMPTY_ARRAY;// not some T[]!
+
+		if (varArgs.length == 1 && varArgs[0] instanceof Object[] a)// antT[] instanceof Object[]!
+				return a;
+
+		return varArgs;// usual good varargs
 	}
 }

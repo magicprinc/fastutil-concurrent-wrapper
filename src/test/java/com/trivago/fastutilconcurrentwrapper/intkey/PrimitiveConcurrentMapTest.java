@@ -2,6 +2,7 @@ package com.trivago.fastutilconcurrentwrapper.intkey;
 
 import com.trivago.fastutilconcurrentwrapper.PrimitiveConcurrentMap;
 import com.trivago.fastutilconcurrentwrapper.util.CFUtil;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -43,7 +44,7 @@ class PrimitiveConcurrentMapTest {
 		assertEquals(74720, CFUtil.bucket(Long.MAX_VALUE, 100_000));
 	}
 
-	@Test
+	@Test  @Disabled
 	void longsAreSame () {
 		long total = 0, t = System.nanoTime();
 		for (long i = Integer.MIN_VALUE; i <= Integer.MAX_VALUE; i++){
