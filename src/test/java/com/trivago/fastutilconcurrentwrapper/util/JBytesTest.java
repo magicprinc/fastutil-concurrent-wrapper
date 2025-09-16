@@ -32,6 +32,10 @@ class JBytesTest {
 		assertFalse(JBytes.nonEmpty(null));
 		assertFalse(JBytes.nonEmpty(new byte[0]));
 		assertTrue(JBytes.nonEmpty(new byte[]{1}));
+
+		assertEquals(0, JBytes.len(null));
+		assertEquals(0, JBytes.len(new byte[0]));
+		assertEquals(1, JBytes.len(new byte[]{0}));
 	}
 
 	@Test

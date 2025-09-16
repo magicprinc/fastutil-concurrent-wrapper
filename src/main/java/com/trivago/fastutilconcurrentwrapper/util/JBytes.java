@@ -41,6 +41,10 @@ public class JBytes {
 		return b != null && b.length > 0;
 	}
 
+	public static int len (byte @Nullable [] b){
+		return b != null ? b.length : 0;
+	}
+
 	/**
 	 A common case of copying arrays from start to [start .. min(len1,len2))
 	 Used when increasing or decreasing the array length.
