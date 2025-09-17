@@ -45,6 +45,15 @@ public class JBytes {
 		return b != null ? b.length : 0;
 	}
 
+	/// Simple bytes (from ints)
+	public static byte[] bytes (int... elements) {
+		int len = elements != null ? elements.length : 0;
+		val b = new byte[len];
+		for (int i = 0; i < len; i++)
+				b[i] = (byte) elements[i];
+		return b;
+	}
+
 	/**
 	 A common case of copying arrays from start to [start .. min(len1,len2))
 	 Used when increasing or decreasing the array length.

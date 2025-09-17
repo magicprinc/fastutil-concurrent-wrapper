@@ -78,7 +78,9 @@ dependencies {
 
 	api('it.unimi.dsi:fastutil:latest.release')
 	compileOnly('org.jctools:jctools-core:latest.release')
-	compileOnly('org.jspecify:jspecify:latest.release')
+	implementation('org.jspecify:jspecify:latest.release')
+	// https://javadoc.io/doc/com.google.errorprone/error_prone_annotations/latest/index.html  E.g: @CanIgnoreReturnValue
+	compileOnly("com.google.errorprone:error_prone_annotations:latest.release")
 	compileOnly('jakarta.validation:jakarta.validation-api:latest.release')
 
 	// TEST
