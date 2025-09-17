@@ -1,5 +1,6 @@
 package com.trivago.fastutilconcurrentwrapper.io;
 
+import com.trivago.fastutilconcurrentwrapper.util.JBytes;
 import it.unimi.dsi.fastutil.io.MeasurableStream;
 import it.unimi.dsi.fastutil.io.RepositionableStream;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -175,7 +176,10 @@ public class BAIS extends ByteArrayInputStream implements ObjectInput, Measurabl
 
 	@Override
 	public int readInt() {
-		return read() << 24 | ((read() & 0xFF) << 16) | ((read() & 0xFF) << 8) | (read() & 0xFF);
+		//return read() << 24 | ((read() & 0xFF) << 16) | ((read() & 0xFF) << 8) | (read() & 0xFF);
+		int v = JBytes.DirectByteArrayAccess.getInt(buf, pos);
+		pos += 4;
+		return v;
 	}
 
 	public int readMedium () {
@@ -193,7 +197,10 @@ public class BAIS extends ByteArrayInputStream implements ObjectInput, Measurabl
 
 	@Override
 	public long readLong () {
-		return (long) readInt() << 32 | (readInt() & 0xFFFF_FFFFL);
+		//return (long) readInt() << 32 | (readInt() & 0xFFFF_FFFFL);
+		long v = JBytes.DirectByteArrayAccess.getLong(buf, pos);
+		pos += 8;
+		return v;
 	}
 
 	@Override

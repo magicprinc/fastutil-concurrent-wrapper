@@ -890,7 +890,7 @@ class BAOSTest {
 		assertEquals(2, o.position());
 		assertEquals(2, o.writerIndex());
 		o.writeLong(0x1234567812345678L);
-		assertEquals(13, o.capacity());
+		assertEquals(10, o.capacity());
 		assertEquals(10, o.size());
 		assertEquals(10, o.length());
 		assertEquals(10, o.position());
@@ -926,7 +926,7 @@ class BAOSTest {
 
 		o.grow(20);
 		assertEquals("0123456789", o.toString());
-		assertEquals(30, o.capacity());
+		assertEquals(47, o.capacity());
 		assertEquals(10, o.size());
 		assertEquals(10, o.length());
 		assertEquals(27, o.position());
@@ -934,22 +934,22 @@ class BAOSTest {
 
 		o.grow(100);
 		assertEquals("0123456789", o.toString());
-		assertEquals(110, o.capacity());// 10 было занято и 100 сверху
+		assertEquals(127, o.capacity());// 10 было занято и 100 сверху
 		assertEquals(10, o.size());
 
 		o.grow(10);
 		assertEquals("0123456789", o.toString());
-		assertEquals(110, o.capacity());
+		assertEquals(127, o.capacity());
 		assertEquals(10, o.size());
 
 		o.writerIndex(109);
 		o.write('x');
-		assertEquals(110, o.capacity());
+		assertEquals(127, o.capacity());
 		assertEquals(110, o.size());
 		assertEquals(110, o.position());
 
-		o.grow(10);
-		assertEquals(165, o.capacity());// 110 * 1.5 = 165
+		o.grow(30);
+		assertEquals(190, o.capacity());// 127 * 1.5 = 190
 		assertEquals(110, o.size());
 	}
 

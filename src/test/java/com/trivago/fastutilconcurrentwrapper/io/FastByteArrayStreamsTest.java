@@ -157,10 +157,14 @@ class FastByteArrayStreamsTest {
 		assertEquals(-1, r.readShort());
 		assertEquals(0xFFFF, r.readUnsignedShort());
 		assertEquals(0xFFFF, r.readChar());
-		assertEquals(-1, r.readInt());
-		assertEquals(-1, r.readLong());
-		assertEquals(Float.NaN, r.readFloat());
-		assertEquals(Double.NaN, r.readDouble());
+		//assertEquals(-1, r.readInt());
+		assertThrows(ArrayIndexOutOfBoundsException.class, r::readInt);
+		//assertEquals(-1, r.readLong());
+		assertThrows(ArrayIndexOutOfBoundsException.class, r::readLong);
+		//assertEquals(Float.NaN, r.readFloat());
+		assertThrows(ArrayIndexOutOfBoundsException.class, r::readFloat);
+		//assertEquals(Double.NaN, r.readDouble());
+		assertThrows(ArrayIndexOutOfBoundsException.class, r::readDouble);
 		assertNull(r.readLine());
 		assertNull(r.readUTF());
 	}

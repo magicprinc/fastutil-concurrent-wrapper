@@ -1,6 +1,7 @@
 package com.trivago.fastutilconcurrentwrapper.io;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
+import com.trivago.fastutilconcurrentwrapper.util.JBytes;
 import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.io.MeasurableStream;
@@ -145,6 +146,7 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 	/// @see org.springframework.util.ResizableByteArrayOutputStream#grow(int)
 	public void grow (@PositiveOrZero int additionalCapacity) {
 		//Assert.isTrue(additionalCapacity >= 0, "Additional capacity must be 0 or higher");
+		if (count < position) additionalCapacity = additionalCapacity + position - count;
 		int needed = count + additionalCapacity;
 		if (needed > buf.length){// size + new > capacity
 			int newCapacity = (int)Math.min(Math.max((long)buf.length + (buf.length >> 1), needed), Arrays.MAX_ARRAY_SIZE);
@@ -182,36 +184,36 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 
 
 	@Override
-	public void writeBoolean(boolean v)  {
+	public void writeBoolean(boolean v) {
 		write(v?1:0);
 	}
 
 	@Override
-	public void writeByte(int v)  {
+	public void writeByte(int v) {
 		write(v);
 	}
 
 	@Override
-	public void writeShort(int v)  {
+	public void writeShort(int v) {
 		write(v >> 8);
 		write(v);
 	}
 
 	@Override
-	public void writeChar(int v)  {
+	public void writeChar(int v) {
 		write(v >> 8);
 		write(v);
 	}
 
 	@Override
-	public void writeInt(int v)  {
-		write(v >> 24);
-		write(v >> 16);
-		write(v >> 8);
-		write(v);
+	public void writeInt (int v) {
+		grow(4);
+		JBytes.DirectByteArrayAccess.setInt(buf, position, v);
+		position += 4;
+		if (count < position) count = position;
 	}
 
-	public void writeMedium (int v)  {
+	public void writeMedium (int v) {
 		write(v >> 16);
 		write(v >> 8);
 		write(v);
@@ -223,18 +225,20 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 	}
 
 	@Override
-	public void writeLong (long v)  {
-		writeInt((int)(v >> 32));
-		writeInt((int) v);
+	public void writeLong (long v) {
+		grow(8);
+		JBytes.DirectByteArrayAccess.setLong(buf, position, v);
+		position += 8;
+		if (count < position) count = position;
 	}
 
 	@Override
-	public void writeFloat(float v)  {
+	public void writeFloat(float v) {
 		writeInt(Float.floatToIntBits(v));
 	}
 
 	@Override
-	public void writeDouble(double v)  {
+	public void writeDouble(double v) {
 		writeLong(Double.doubleToLongBits(v));
 	}
 
