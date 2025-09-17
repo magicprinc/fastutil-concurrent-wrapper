@@ -161,27 +161,31 @@ public class BAIS extends ByteArrayInputStream implements ObjectInput, Measurabl
 	/// (short)((read() << 8)|(read() & 0xFF))
 	@Override
 	public short readShort () {
+		if (count < pos + 2) throw new ArrayIndexOutOfBoundsException("readShort, but "+available());// EOF
 		short v = JBytes.DirectByteArrayAccess.getShort(buf, pos);
 		pos += 2;
 		return v;
 	}
 
 	@Override
-	public int readUnsignedShort() {
+	public int readUnsignedShort () {
+		if (count < pos + 2) throw new ArrayIndexOutOfBoundsException("readUnsignedShort, but "+available());// EOF
 		int v = JBytes.DirectByteArrayAccess.getUnsignedShort(buf, pos);
 		pos += 2;
 		return v;
 	}
 
 	@Override
-	public char readChar() {
+	public char readChar () {
+		if (count < pos + 2) throw new ArrayIndexOutOfBoundsException("readChar, but "+available());// EOF
 		char v = JBytes.DirectByteArrayAccess.getChar(buf, pos);
 		pos += 2;
 		return v;
 	}
 
 	@Override
-	public int readInt() {
+	public int readInt () {
+		if (count < pos + 4) throw new ArrayIndexOutOfBoundsException("readInt, but "+available());// EOF
 		//return read() << 24 | ((read() & 0xFF) << 16) | ((read() & 0xFF) << 8) | (read() & 0xFF);
 		int v = JBytes.DirectByteArrayAccess.getInt(buf, pos);
 		pos += 4;
@@ -195,6 +199,7 @@ public class BAIS extends ByteArrayInputStream implements ObjectInput, Measurabl
 	/// @see UUID#UUID(long, long)
 	/// @see UUID#fromString(String)
 	public UUID readUUID () {
+		if (count < pos + 16) throw new ArrayIndexOutOfBoundsException("readUUID, but "+available());// EOF
 		//val bb = ByteBuffer.wrap(bytes); long mostSigBits = bb.getLong(); long leastSigBits = bb.getLong();  быстрее за счёт VarHandle
 		long mostSigBits = readLong();// 0..7
 		long leastSigBits = readLong();// 8..15
@@ -203,6 +208,7 @@ public class BAIS extends ByteArrayInputStream implements ObjectInput, Measurabl
 
 	@Override
 	public long readLong () {
+		if (count < pos + 8) throw new ArrayIndexOutOfBoundsException("readLong, but "+available());// EOF
 		//return (long) readInt() << 32 | (readInt() & 0xFFFF_FFFFL);
 		long v = JBytes.DirectByteArrayAccess.getLong(buf, pos);
 		pos += 8;
@@ -211,6 +217,7 @@ public class BAIS extends ByteArrayInputStream implements ObjectInput, Measurabl
 
 	@Override
 	public float readFloat () {
+		if (count < pos + 4) throw new ArrayIndexOutOfBoundsException("readFloat, but "+available());// EOF
 		float v = JBytes.DirectByteArrayAccess.getFloat(buf, pos);
 		pos += 4;
 		return v;
@@ -218,6 +225,7 @@ public class BAIS extends ByteArrayInputStream implements ObjectInput, Measurabl
 
 	@Override
 	public double readDouble () {
+		if (count < pos + 8) throw new ArrayIndexOutOfBoundsException("readDouble, but "+available());// EOF
 		double v = JBytes.DirectByteArrayAccess.getDouble(buf, pos);
 		pos += 8;
 		return v;
