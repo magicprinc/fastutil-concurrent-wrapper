@@ -160,18 +160,24 @@ public class BAIS extends ByteArrayInputStream implements ObjectInput, Measurabl
 	/// @see DataInputStream#readShort
 	/// (short)((read() << 8)|(read() & 0xFF))
 	@Override
-	public short readShort() {
-		return (short)((read() << 8)|(read() & 0xFF));
+	public short readShort () {
+		short v = JBytes.DirectByteArrayAccess.getShort(buf, pos);
+		pos += 2;
+		return v;
 	}
 
 	@Override
 	public int readUnsignedShort() {
-		return ((read() & 0xFF) << 8)|(read() & 0xFF);
+		int v = JBytes.DirectByteArrayAccess.getUnsignedShort(buf, pos);
+		pos += 2;
+		return v;
 	}
 
 	@Override
 	public char readChar() {
-		return (char)(((read() & 0xFF) << 8)|(read() & 0xFF));
+		char v = JBytes.DirectByteArrayAccess.getChar(buf, pos);
+		pos += 2;
+		return v;
 	}
 
 	@Override
@@ -205,12 +211,16 @@ public class BAIS extends ByteArrayInputStream implements ObjectInput, Measurabl
 
 	@Override
 	public float readFloat () {
-		return Float.intBitsToFloat(readInt());
+		float v = JBytes.DirectByteArrayAccess.getFloat(buf, pos);
+		pos += 4;
+		return v;
 	}
 
 	@Override
 	public double readDouble () {
-		return Double.longBitsToDouble(readLong());
+		double v = JBytes.DirectByteArrayAccess.getDouble(buf, pos);
+		pos += 8;
+		return v;
 	}
 
 	@Override  @Deprecated

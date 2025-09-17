@@ -998,6 +998,8 @@ class BAOSTest {
 	}
 
 	/// 500k: 5_760 ms, op/s=86_802
+	/// VarHandle int&long: 2_333 ms, op/s=214_281
+	/// all: 2_281, op/s=219_195
 	@Test
 	void _benchmark () {
 		IntStream.range(0, 2).forEach(__->{

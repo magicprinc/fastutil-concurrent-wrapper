@@ -194,15 +194,19 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 	}
 
 	@Override
-	public void writeShort(int v) {
-		write(v >> 8);
-		write(v);
+	public void writeShort (int v) {
+		grow(2);
+		JBytes.DirectByteArrayAccess.setShort(buf, position, (short) v);
+		position += 2;
+		if (count < position) count = position;
 	}
 
 	@Override
-	public void writeChar(int v) {
-		write(v >> 8);
-		write(v);
+	public void writeChar (int v) {
+		grow(2);
+		JBytes.DirectByteArrayAccess.setChar(buf, position, (char) v);
+		position += 2;
+		if (count < position) count = position;
 	}
 
 	@Override
@@ -234,12 +238,18 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 
 	@Override
 	public void writeFloat(float v) {
-		writeInt(Float.floatToIntBits(v));
+		grow(4);
+		JBytes.DirectByteArrayAccess.setFloat(buf, position, v);
+		position += 4;
+		if (count < position) count = position;
 	}
 
 	@Override
 	public void writeDouble(double v) {
-		writeLong(Double.doubleToLongBits(v));
+		grow(8);
+		JBytes.DirectByteArrayAccess.setDouble(buf, position, v);
+		position += 8;
+		if (count < position) count = position;
 	}
 
 	/**
