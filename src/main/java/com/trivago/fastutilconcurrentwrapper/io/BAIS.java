@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.UTFDataFormatException;
+import java.util.PrimitiveIterator;
 import java.util.UUID;
 
 /**
@@ -26,7 +27,7 @@ import java.util.UUID;
  @author Andrej Fink [https://magicprinc.github.io]
 */
 @SuppressWarnings({"NonSynchronizedMethodOverridesSynchronizedMethod", "ResultOfMethodCallIgnored"})
-public class BAIS extends ByteArrayInputStream implements ObjectInput, MeasurableStream, RepositionableStream, SafeCloseable {
+public class BAIS extends ByteArrayInputStream implements ObjectInput, MeasurableStream, RepositionableStream, SafeCloseable, PrimitiveIterator.OfInt {
 	protected int offset;
 
 	public BAIS (byte[] array, @PositiveOrZero int offset, @PositiveOrZero int maxLength) {
@@ -282,5 +283,15 @@ loop:
 		String s = new String(buf, 0,  pos, strLen);
 		pos += strLen;
 		return s;
+	}
+
+	@Override
+	public boolean hasNext () {
+		return available() > 0;
+	}
+
+	@Override
+	public int nextInt () {
+		return read();
 	}
 }
