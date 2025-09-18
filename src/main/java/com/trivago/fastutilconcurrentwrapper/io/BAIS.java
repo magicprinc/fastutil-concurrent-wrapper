@@ -287,7 +287,8 @@ loop:
 
 	@Override
 	public boolean hasNext () {
-		return available() > 0;
+		// available() > 0 == (length - position) > 0
+		return pos < count;
 	}
 
 	@Override
