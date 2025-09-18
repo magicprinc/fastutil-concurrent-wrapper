@@ -53,7 +53,7 @@ import java.util.UUID;
  @author Andrej Fink [https://magicprinc.github.io]
 */
 @SuppressWarnings("NonSynchronizedMethodOverridesSynchronizedMethod")
-public class BAOS extends ByteArrayOutputStream implements RepositionableStream, ObjectOutput, MeasurableStream, SafeCloseable {
+public class BAOS extends ByteArrayOutputStream implements RepositionableStream, ObjectOutput, MeasurableStream, SafeCloseable, Appendable {
 	/// The array backing the output stream.
 	/// @see #buf
 	public byte[] array (){ return buf; }
@@ -314,5 +314,38 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 			oos.writeObject(obj);
 			oos.flush();
 		}
+	}
+
+	@Override
+	public Appendable append (CharSequence csq) {
+		int len;
+		if (csq != null && (len = csq.length()) > 0)
+				append(csq, 0, len);
+		return this;
+	}
+
+	/// @see #write(byte[], int, int)
+	/// @see #writeBytes(byte[])
+	@Override
+	public Appendable append (CharSequence csq, int start, int end) {
+		int len = end - start;
+		Objects.checkFromIndexSize(start, len, csq.length());
+		if (position + len > buf.length)
+				buf = ByteArrays.grow(buf, position + len, position);
+		for (int i = 0; i < len; i++)
+				buf[position + i] = (byte) csq.charAt(start + i);
+		position += len;
+		if (count < position) count = position;
+		return this;
+	}
+
+	/// @see #writeChar(int)
+	@Override
+	public Appendable append (char c) {
+		grow(2);
+		JBytes.DirectByteArrayAccess.setChar(buf, position, c);
+		position += 2;
+		if (count < position) count = position;
+		return this;
 	}
 }
