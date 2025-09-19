@@ -8,6 +8,7 @@ import lombok.val;
 import org.jspecify.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -15,6 +16,8 @@ import java.io.ObjectInputStream;
 import java.io.UTFDataFormatException;
 import java.util.PrimitiveIterator;
 import java.util.UUID;
+
+import static java.nio.charset.StandardCharsets.*;
 
 /**
  @see java.io.ByteArrayInputStream
@@ -39,8 +42,8 @@ public class BAIS extends ByteArrayInputStream implements ObjectInput, Measurabl
 
 	public BAIS (byte[] array){ super(array); }//new
 
-	public BAIS (BAOS baos) {
-		super(baos.array(), 0, baos.size());
+	public BAIS (ByteArrayOutputStream baos) {
+		super(baos instanceof BAOS us ? us.array() : baos.toByteArray(), 0, baos.size());
 	}//new
 
 	/// The array backing the input stream. capacity = array().length
@@ -280,15 +283,23 @@ loop:
 	/// @see BAOS#writeBytes(String)
 	/// @see java.nio.charset.StandardCharsets#ISO_8859_1
 	public String readLatin1String (@PositiveOrZero int strLen) {
+		strLen = Math.min(strLen, available());
 		String s = new String(buf, 0,  pos, strLen);
 		pos += strLen;
 		return s;
 	}
 
+	/// @see java.nio.charset.StandardCharsets#UTF_16BE
+	public String readUTF16String (@PositiveOrZero int strLen) {
+		int byteLen = Math.min(strLen << 1, available());//*2
+		String s = new String(buf, pos, byteLen, UTF_16BE);
+		pos += byteLen;
+		return s;
+	}
+
 	@Override
 	public boolean hasNext () {
-		// available() > 0 == (length - position) > 0
-		return pos < count;
+		return pos < count;// position < length: available() > 0 == (length - position) > 0
 	}
 
 	@Override

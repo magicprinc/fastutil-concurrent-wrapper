@@ -19,6 +19,8 @@ import java.nio.charset.Charset;
 import java.util.Objects;
 import java.util.UUID;
 
+import static java.nio.charset.StandardCharsets.*;
+
 /**
  Simple, fast byte-array output stream that exposes the backing array.
 
@@ -79,6 +81,24 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 		super(0);
 		buf = a;
 	}//new
+
+	public BAOS (byte[] a, @PositiveOrZero int length) {
+		super(0);
+		buf = a;
+		count = Math.min(length, a.length);
+	}//new
+
+	public BAOS (ByteArrayOutputStream baos) {
+		super(0);
+		count = baos.size();
+		if (baos instanceof BAOS us){
+			buf = us.array();
+			position = us.writerIndex();
+		} else {
+			buf = baos.toByteArray();
+			position = count;
+		}
+	}//new ~ clone
 
 	/// Marks this array output stream as empty.
 	@Override public void reset (){ count = 0;  position = 0; }
@@ -318,9 +338,7 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 
 	@Override
 	public Appendable append (CharSequence csq) {
-		int len;
-		if (csq != null && (len = csq.length()) > 0)
-				append(csq, 0, len);
+		append(csq, 0, csq.length());
 		return this;
 	}
 
@@ -328,13 +346,15 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 	/// @see #writeBytes(byte[])
 	@Override
 	public Appendable append (CharSequence csq, int start, int end) {
-		int len = end - start;
+		final int len = end - start;
 		Objects.checkFromIndexSize(start, len, csq.length());
-		if (position + len > buf.length)
-				buf = ByteArrays.grow(buf, position + len, position);
-		for (int i = 0; i < len; i++)
-				buf[position + i] = (byte) csq.charAt(start + i);
-		position += len;
+		final int len2 = len << 1;
+		if (position + len2 > buf.length)
+				buf = ByteArrays.grow(buf, position + len2, position);
+
+		JBytes.DirectByteArrayAccess.copyCharsToByteArray(csq, start,  buf, position,  len);
+
+		position += len2;
 		if (count < position) count = position;
 		return this;
 	}
@@ -347,5 +367,35 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 		position += 2;
 		if (count < position) count = position;
 		return this;
+	}
+
+	@Override
+	public boolean equals (Object obj) {
+		if (this == obj){
+			return true;
+		} else if (obj instanceof BAOS baos){
+			return java.util.Arrays.equals(buf,0,count, baos.array(),0,baos.size());
+		} else if (obj instanceof ByteArrayOutputStream baos){
+			return java.util.Arrays.equals(buf,0,count, baos.toByteArray(),0,baos.size());
+		} else if (obj instanceof byte[] a){
+			return java.util.Arrays.equals(buf,0,count, a,0,a.length);
+		} else if (obj instanceof CharSequence cs){
+			byte[] a = cs.toString().getBytes(UTF_16BE);
+			return java.util.Arrays.equals(buf,0,count, a,0,a.length);
+		} else {
+			return false;
+		}
+	}
+
+	/// @see java.util.Arrays#hashCode(byte[])
+	/// @see jdk.internal.util.ArraysSupport#hashCode(int, byte[], int, int)
+	/// @see java.lang.String#hashCode
+	@Override
+	public int hashCode () {
+		int result = 1;
+		for (int i = 0; i < count; i++){
+			result = 31 * result + buf[i];
+		}
+		return result;
 	}
 }

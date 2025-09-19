@@ -225,6 +225,7 @@ public class JBytes {
 	 * @see java.io.DataInputStream
 	 * @see jdk.internal.util.ByteArray
 	 * @see jdk.internal.util.ByteArrayLittleEndian
+	 * @see com.dynatrace.hash4j.internal.ByteArrayUtil
 	 */
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
 	public static final class DirectByteArrayAccess {
@@ -600,6 +601,69 @@ public class JBytes {
 
 		private static VarHandle create(Class<?> viewArrayClass) {
 			return MethodHandles.byteArrayViewVarHandle(viewArrayClass, ByteOrder.BIG_ENDIAN);
+		}
+
+		/**
+		 * Reads a {@code long} value from a {@link CharSequence} with given offset.
+		 *
+		 * @param cs a char sequence
+		 * @param off an offset
+		 * @return the value
+		 */
+		public static long getLong (CharSequence cs, int off) {
+			return ((long) cs.charAt(off) << 48)
+					| ((long) cs.charAt(off + 1) << 32)
+					| ((long) cs.charAt(off + 2) << 16)
+					| cs.charAt(off + 3);
+		}
+
+		/**
+		 * Reads an {@code int} value from a {@link CharSequence} with given offset.
+		 *
+		 * @param cs a char sequence
+		 * @param off an offset
+		 * @return the value
+		 */
+		public static int getInt (CharSequence cs, int off) {
+			return ((int) cs.charAt(off) << 16)
+					| (int) cs.charAt(off + 1);
+		}
+
+		/**
+		 * Copies a given number of characters from a {@link CharSequence} into a byte array.
+		 *
+		 * @param cs a char sequence
+		 * @param offsetCharSequence an offset for the char sequence
+		 * @param toByteArray a byte array
+		 * @param offsetByteArray an offset for the byte array
+		 * @param numChars the number of characters to copy
+		 */
+		public static void copyCharsToByteArray (
+			CharSequence cs,
+			int offsetCharSequence,
+			byte[] toByteArray,
+			int offsetByteArray,
+			int numChars
+		){
+			for (int charIdx = 0; charIdx <= numChars - 4; charIdx += 4){
+				setLong(toByteArray,
+					offsetByteArray + (charIdx << 1),
+					getLong(cs, offsetCharSequence + charIdx));
+			}
+
+			if ((numChars & 2) != 0){
+				int charIdx = numChars & 0xFFFF_FFFC;
+				setInt(toByteArray,
+					offsetByteArray + (charIdx << 1),
+					getInt(cs, offsetCharSequence + charIdx));
+			}
+
+			if ((numChars & 1) != 0){
+				int charIdx = numChars & 0xFFFF_FFFE;
+				setChar(toByteArray,
+					offsetByteArray + (charIdx << 1),
+					cs.charAt(offsetCharSequence + charIdx));
+			}
 		}
 	}
 }

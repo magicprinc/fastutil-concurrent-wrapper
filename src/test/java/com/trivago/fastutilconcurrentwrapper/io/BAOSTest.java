@@ -1,6 +1,7 @@
 package com.trivago.fastutilconcurrentwrapper.io;
 
 import com.trivago.fastutilconcurrentwrapper.util.JBytes;
+import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +23,7 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.IntStream;
 
+import static java.nio.charset.StandardCharsets.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 ///@see BAOS
@@ -607,7 +609,7 @@ class BAOSTest {
 
 		x.reset();
 		x.writeChars("Я$€");
-		assertEquals("Я$€", x.toString(StandardCharsets.UTF_16BE));
+		assertEquals("Я$€", x.toString(UTF_16BE));
 	}
 
 	@Test
@@ -1076,5 +1078,52 @@ class BAOSTest {
 		baos.writeBytes(sss);
 		assertEquals(sss, baos.toString());
 		assertEquals(sss, baos.toString(StandardCharsets.ISO_8859_1));
+	}
+
+	@Test
+	@SuppressWarnings({"ConstantValue", "EqualsBetweenInconvertibleTypes", "EqualsWithItself"})
+	void _appendable () {
+		var w = new BAOS();
+		assertEquals(1, w.hashCode());
+		assertEquals(1, Arrays.hashCode(ByteArrays.EMPTY_ARRAY));
+
+		var s1 = "Проверка связи!";
+		w.append(s1);
+		w.append("");// nop
+		w.append("012 test 012", 3, 9);
+		w.append("012 test 012", 3, 3);// nop
+		w.append('!');
+		assertEquals(s1+" test !", w.toString(UTF_16BE));
+		assertEquals(44, w.length());
+
+		val s3 = "🚀".repeat(50_000);
+		w.append(s3);
+		String total = s1 + " test !" + s3;
+		assertEquals(total, w.toString(UTF_16BE));
+		assertEquals(200_044, w.length());// 44+
+		assertEquals(2, "🚀".length());// 2 chars == 4 bytes
+
+		assertEquals(542738558, w.hashCode());
+		assertEquals(w.hashCode(), Arrays.hashCode(w.toByteArray()));
+		assertEquals(w.hashCode(), Arrays.hashCode(total.getBytes(UTF_16BE)));
+
+		boolean eq = w.equals(total);
+		assertTrue(eq);
+		eq = w.equals(total.getBytes(UTF_16BE));
+		assertTrue(eq);
+		eq = w.equals(w);
+		assertTrue(eq);
+		eq = w.equals(null);
+		assertFalse(eq);
+
+		var clone = new BAOS(w);
+		assertEquals(clone, w);
+		assertEquals(w.hashCode(), clone.hashCode());
+		// verify with BAIS
+		var is = new BAIS(w);
+
+		assertEquals(s1, is.readUTF16String(s1.length()));
+		assertEquals(" test !", is.readUTF16String(7));
+		assertEquals(s3, is.readUTF16String(s3.length()));
 	}
 }

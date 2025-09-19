@@ -5,10 +5,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.io.UTFDataFormatException;
 import java.util.Arrays;
 import java.util.UUID;
 
+import static java.nio.charset.StandardCharsets.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /// @see BAIS
@@ -325,5 +327,36 @@ class BAISTest {
 		int skipped = stream.skipBytes(3);
 		assertEquals(3, skipped);
 		assertEquals(3, stream.position());
+	}
+
+	@Test
+	void _transferTo () throws IOException {
+		String s = "Hello World!";
+		var is = new BAIS(s.getBytes(ISO_8859_1));
+		var w = new BAOS();
+		is.transferTo(w);
+		assertEquals(s, w.toString());
+		assertEquals(0, is.available());
+		is.reset();
+		assertEquals(is.available(), w.length());
+	}
+
+	@Test
+	void _iterator () throws IOException {
+		String s = "Hello World!";
+		var is = new BAIS(s.getBytes(ISO_8859_1));
+		var w = new BAOS(is.array(), is.limit());
+		assertEquals(s, w.toString());
+		assertEquals(is.available(), w.length());
+
+		assertTrue(is.hasNext());
+		assertEquals('H', is.nextInt());
+		assertTrue(is.hasNext());
+		assertEquals('e', is.nextInt());
+
+		is.reset();
+		val sb = new StringBuilder();
+		is.forEachRemaining((int ch)->sb.append((char) ch));
+		assertEquals(s, sb.toString());
 	}
 }
