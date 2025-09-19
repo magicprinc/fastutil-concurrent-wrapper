@@ -337,7 +337,7 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 	}
 
 	@Override
-	public Appendable append (CharSequence csq) {
+	public BAOS append (CharSequence csq) {
 		append(csq, 0, csq.length());
 		return this;
 	}
@@ -345,7 +345,7 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 	/// @see #write(byte[], int, int)
 	/// @see #writeBytes(byte[])
 	@Override
-	public Appendable append (CharSequence csq, int start, int end) {
+	public BAOS append (CharSequence csq, int start, int end) {
 		final int len = end - start;
 		Objects.checkFromIndexSize(start, len, csq.length());
 		final int len2 = len << 1;
@@ -361,7 +361,7 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 
 	/// @see #writeChar(int)
 	@Override
-	public Appendable append (char c) {
+	public BAOS append (char c) {
 		grow(2);
 		JBytes.DirectByteArrayAccess.setChar(buf, position, c);
 		position += 2;

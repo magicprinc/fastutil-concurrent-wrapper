@@ -1044,11 +1044,54 @@ class BAOSTest {
 		});
 	}
 
+	@Test
+	void _benchmarkJDK () {
+		IntStream.range(0, 2).forEach(__->{
+			long t = System.nanoTime();
+			for (int loop = 1; loop < 500_000; loop++){
+				val baos = new BAOS();
+				var os = new DataOutputStream(baos);
+				val is = new BAIS(baos.array());
+
+				try {
+					for (int i = 0; i < 133; i++){
+						os.write(0xAB);
+						os.writeShort(0xCD_EF);
+						os.writeInt(0x1234_5678);
+						os.writeLong(0x91929394_95969798L);
+						os.writeDouble(Math.PI);
+						os.writeLong(uuid.getMostSignificantBits());
+						os.writeLong(uuid.getLeastSignificantBits());
+						os.writeBytes("Answer42!");
+					}
+				} catch (IOException e){
+					throw new AssertionError(e);
+				}
+				assertEquals(6384, os.size());
+
+				is.array(baos.array(), 0, os.size());
+
+				for (int i = 0; i < 133; i++){
+					assertEquals(0xAB_CD_EF, is.readMedium());
+					assertEquals(0x1234_5678, is.readInt());
+					assertEquals(0x91929394_95969798L, is.readLong());
+					assertEquals(Math.PI, is.readDouble());
+					assertEquals(uuid, is.readUUID());
+					assertEquals("Answer42!", is.readLatin1String(9));
+				}
+				assertEquals(9222, is.array().length);
+				assertEquals(6384, is.length());
+				assertEquals(6384, is.limit());
+				assertEquals(6384, is.position());
+				assertEquals(6384, is.readerIndex());
+			}//f
+			System.out.println(benchToStr(t, System.nanoTime(), 500_000));
+		});
+	}
+
 	public static String benchToStr (long start, long end, long totalOperations) {
 		assert start <= end : "start ≤ end, but " + start + " > " + end;
-
 		long elapsed = end - start;
-
 		return String.format(Locale.ENGLISH, "%.3f, op/s=%.2f", elapsed/1000/1000.0, totalOperations * 1_000_000_000.0 / elapsed);
 	}
 
@@ -1125,5 +1168,20 @@ class BAOSTest {
 		assertEquals(s1, is.readUTF16String(s1.length()));
 		assertEquals(" test !", is.readUTF16String(7));
 		assertEquals(s3, is.readUTF16String(s3.length()));
+	}
+
+	@Test
+	void _baos_as_StringBuilder () {
+		val w = new BAOS(5000*2);
+		val b = new StringBuilder(5000);
+
+		for (int i = 0; i<=255; i++){
+			w.append(Integer.toString(i)).append(Integer.toHexString(i)).append('\n');
+			b.append(i).append(Integer.toHexString(i)).append('\n');
+		}
+
+		assertEquals(w.toString(UTF_16BE), b.toString());
+		assertArrayEquals(w.toByteArray(), b.toString().getBytes(UTF_16BE));
+		assertEquals(w.length()/2, b.length());
 	}
 }
