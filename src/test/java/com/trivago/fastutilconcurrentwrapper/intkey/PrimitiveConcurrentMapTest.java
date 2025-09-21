@@ -29,11 +29,11 @@ class PrimitiveConcurrentMapTest {
 
 	@Test
 	void _hashLong () {
-		assertEquals(74720, CFUtil.bucket(Long.MIN_VALUE, 100_000));
-		assertEquals(79862, CFUtil.bucket(Long.MIN_VALUE+1, 100_000));
-		assertEquals(74720, CFUtil.bucket(Integer.MIN_VALUE & 0xFFFFFFFFL, 100_000));
+		assertEquals(99203, CFUtil.bucket(Long.MIN_VALUE, 100_000));
+		assertEquals(66441, CFUtil.bucket(Long.MIN_VALUE+1, 100_000));
+		assertEquals(59481, CFUtil.bucket(Integer.MIN_VALUE & 0xFFFFFFFFL, 100_000));
 		assertEquals(74720, CFUtil.bucket((long) Integer.MIN_VALUE, 100_000));
-		assertEquals(79862, CFUtil.bucket(-Integer.MAX_VALUE & 0xFFFFFFFFL, 100_000));
+		assertEquals(57855, CFUtil.bucket(-Integer.MAX_VALUE & 0xFFFFFFFFL, 100_000));
 		assertEquals(79862, CFUtil.bucket((long) -Integer.MAX_VALUE, 100_000));
 		assertEquals(3539, CFUtil.bucket(-100_000L, 100_000));
 		assertEquals(83783, CFUtil.bucket(-1L, 100_000));
@@ -41,7 +41,7 @@ class PrimitiveConcurrentMapTest {
 		assertEquals(76727, CFUtil.bucket(1L, 100_000));
 		assertEquals(55934, CFUtil.bucket(100_000L, 100_000));
 		assertEquals(67416, CFUtil.bucket((long) Integer.MAX_VALUE, 100_000));
-		assertEquals(74720, CFUtil.bucket(Long.MAX_VALUE, 100_000));
+		assertEquals(86138, CFUtil.bucket(Long.MAX_VALUE, 100_000));
 	}
 
 	@Test  @Disabled
@@ -92,11 +92,11 @@ class PrimitiveConcurrentMapTest {
 	void _hashObj () {
 		assertEquals(0, CFUtil.bucket(null, 100_000));
 
-		assertEquals(74720, CFUtil.bucket(Long.valueOf(Long.MIN_VALUE), 100_000));
-		assertEquals(74720, CFUtil.bucket(Long.valueOf(Integer.MIN_VALUE & 0xFFFFFFFFL), 100_000));
+		assertEquals(99203, CFUtil.bucket(Long.valueOf(Long.MIN_VALUE), 100_000));
+		assertEquals(59481, CFUtil.bucket(Long.valueOf(Integer.MIN_VALUE & 0xFFFFFFFFL), 100_000));
 		assertEquals(74720, CFUtil.bucket(Long.valueOf(Integer.MIN_VALUE), 100_000));
 
-		assertEquals(79862, CFUtil.bucket(Long.valueOf(-Integer.MAX_VALUE & 0xFFFFFFFFL), 100_000));
+		assertEquals(57855, CFUtil.bucket(Long.valueOf(-Integer.MAX_VALUE & 0xFFFFFFFFL), 100_000));
 		assertEquals(79862, CFUtil.bucket(Long.valueOf(-Integer.MAX_VALUE), 100_000));
 		assertEquals(3539, CFUtil.bucket(Long.valueOf(-100_000L), 100_000));
 		assertEquals(57924, CFUtil.bucket(Long.valueOf(-2L), 100_000));
@@ -108,7 +108,7 @@ class PrimitiveConcurrentMapTest {
 		assertEquals(47078, CFUtil.bucket(Integer.valueOf(2), 100_000));
 		assertEquals(55934, CFUtil.bucket(Long.valueOf(100_000L), 100_000));
 		assertEquals(67416, CFUtil.bucket(Long.valueOf(Integer.MAX_VALUE), 100_000));
-		assertEquals(74720, CFUtil.bucket(Long.valueOf(Long.MAX_VALUE), 100_000));
+		assertEquals(86138, CFUtil.bucket(Long.valueOf(Long.MAX_VALUE), 100_000));
 	}
 
 	@Test

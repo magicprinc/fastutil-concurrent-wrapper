@@ -21,29 +21,58 @@ import org.jspecify.annotations.Nullable;
 public final class CFUtil {
 	public static final StackTraceElement[] EMPTY_STACK_TRACE = new StackTraceElement[0];
 
-	/** @see it.unimi.dsi.fastutil.HashCommon#murmurHash3 */
-	public static int hash (int hash) {
-		return HashCommon.murmurHash3(hash);
+	/// re-hash
+	/// 👀 hash4j
+	///
+	/// @see it.unimi.dsi.fastutil.HashCommon#murmurHash3
+	/// @see org.springframework.util.ConcurrentReferenceHashMap#getHash(Object)
+	/// @see org.jsr166.ConcurrentLinkedHashMap#hash(int)
+	/// @see jdk.internal.classfile.impl.AbstractPoolEntry#phiMix
+	/// @see io.vertx.core.json.jackson.HybridJacksonPool.XorShiftThreadProbe#probe
+	/// @see com.google.common.util.concurrent.Striped#smear
+	/// @see java.util.concurrent.ThreadLocalRandom#PROBE_INCREMENT
+	/// @see java.util.concurrent.ThreadLocalRandom#advanceProbe
+	/// @see #bucket
+	/// @see #hash
+	public static int hash (int hashOrKey) {
+		return HashCommon.murmurHash3(hashOrKey);
 	}
+
+	public static int hash (long hashOrKey) {
+		return hashOrKey < Integer.MIN_VALUE || hashOrKey > Integer.MAX_VALUE
+				? Long.hashCode(HashCommon.murmurHash3(hashOrKey))
+				: HashCommon.murmurHash3((int) hashOrKey);// if long uses low 32bit only
+	}
+
+	public static int hash (@Nullable Long hashOrKey) {
+		if (hashOrKey == null)
+				return 0;
+		return hashOrKey < Integer.MIN_VALUE || hashOrKey > Integer.MAX_VALUE
+			? Long.hashCode(HashCommon.murmurHash3(hashOrKey))
+			: HashCommon.murmurHash3(hashOrKey.intValue());// if long uses low 32bit only
+	}
+
+	public static int hash (@Nullable Object object4hashCode) {
+		if (object4hashCode == null)
+			return 0;
+		else if (object4hashCode instanceof Long n)
+			return n < Integer.MIN_VALUE || n > Integer.MAX_VALUE
+				? Long.hashCode(HashCommon.murmurHash3(n))
+				: HashCommon.murmurHash3(n.intValue());// if long uses low 32bit only
+		else
+			return HashCommon.murmurHash3(object4hashCode.hashCode());
+	}
+
 
 	/** @see #bucket */
 	public static @PositiveOrZero int bucket (int hashOrKey, @Positive int bucketSize) {
-		int goodHash = HashCommon.murmurHash3(hashOrKey);
-		return Math.abs(goodHash % bucketSize);
+		return Math.abs(hash(hashOrKey) % bucketSize);
 	}
 
-	/**
-	 @see #bucket
-	 @see java.util.Objects#hashCode(Object)
-	 */
+	/// @see #bucket
+	/// @see java.util.Objects#hashCode(Object)
 	public static @PositiveOrZero int bucket (@Nullable Object object4hashCode, @Positive int bucketSize) {
-		if (object4hashCode == null){
-			return 0;
-		} else if (object4hashCode instanceof Long n){
-			return bucket(n.longValue(), bucketSize);
-		} else {
-			return bucket(object4hashCode.hashCode(), bucketSize);
-		}
+		return Math.abs(hash(object4hashCode) % bucketSize);
 	}
 
 	/**
@@ -59,10 +88,12 @@ public final class CFUtil {
 	 @see Long#hashCode(long)
 	*/
 	public static @PositiveOrZero int bucket (long hashOrKey, @Positive int bucketSize) {
-		return hashOrKey > Integer.MAX_VALUE || hashOrKey < Integer.MIN_VALUE
-			? bucket(Long.hashCode(hashOrKey), bucketSize)
-			: bucket((int) hashOrKey, bucketSize);// long uses low 32bit only
+		return Math.abs(hash(hashOrKey) % bucketSize);
 	}
+	public static @PositiveOrZero int bucket (@Nullable Long hashOrKey, @Positive int bucketSize) {
+		return Math.abs(hash(hashOrKey) % bucketSize);
+	}
+
 
 	/**
 	 * Combined two 32-bit keys into a 64-bit compound.
