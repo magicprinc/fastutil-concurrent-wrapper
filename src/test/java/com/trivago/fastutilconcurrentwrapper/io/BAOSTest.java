@@ -2,6 +2,7 @@ package com.trivago.fastutilconcurrentwrapper.io;
 
 import com.trivago.fastutilconcurrentwrapper.util.JBytes;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
+import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +15,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UTFDataFormatException;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,13 +23,14 @@ import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.stream.IntStream;
 
 import static java.nio.charset.StandardCharsets.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 ///@see BAOS
-class BAOSTest {
+public class BAOSTest {
 	private BAOS stream;
 
 	static String toHex (byte[] b){
@@ -1004,10 +1007,10 @@ class BAOSTest {
 	/// all: 2_281, op/s=219_195
 	@Test
 	void _benchmark () {
-		IntStream.range(0, 2).forEach(__->{
+		IntStream.range(0, 2).forEach(iteration->{
 			long t = System.nanoTime();
 			for (int loop = 1; loop < 500_000; loop++){
-				val os = new BAOS();
+				val os = new BAOS(iteration==0?160:9222);
 				val is = new BAIS(os.array());
 
 				for (int i = 0; i < 133; i++){
@@ -1046,10 +1049,10 @@ class BAOSTest {
 
 	@Test
 	void _benchmarkJDK () {
-		IntStream.range(0, 2).forEach(__->{
+		IntStream.range(0, 2).forEach(iteration->{
 			long t = System.nanoTime();
 			for (int loop = 1; loop < 500_000; loop++){
-				val baos = new BAOS();
+				val baos = new BAOS((iteration==0?160:9222));// ByteArrayOutputStream is very slow 😱
 				var os = new DataOutputStream(baos);
 				val is = new BAIS(baos.array());
 
@@ -1079,7 +1082,48 @@ class BAOSTest {
 					assertEquals(uuid, is.readUUID());
 					assertEquals("Answer42!", is.readLatin1String(9));
 				}
-				assertEquals(9222, is.array().length);
+				//assertEquals(9222, is.array().length);
+				assertEquals(6384, is.length());
+				assertEquals(6384, is.limit());
+				assertEquals(6384, is.position());
+				assertEquals(6384, is.readerIndex());
+			}//f
+			System.out.println(benchToStr(t, System.nanoTime(), 500_000));
+		});
+	}
+
+	@Test
+	void _benchmarkJDKBuffer () {
+		IntStream.range(0, 2).forEach(__->{
+			long t = System.nanoTime();
+			for (int loop = 1; loop < 500_000; loop++){
+				var bytes = new byte[9222];
+				var os = ByteBuffer.wrap(bytes);
+				val is = new BAIS(bytes);
+
+				for (int i = 0; i < 133; i++){
+					os.put((byte) 0xAB);
+					os.putShort((short) 0xCD_EF);
+					os.putInt(0x1234_5678);
+					os.putLong(0x91929394_95969798L);
+					os.putDouble(Math.PI);
+					os.putLong(uuid.getMostSignificantBits());
+					os.putLong(uuid.getLeastSignificantBits());
+					os.put("Answer42!".getBytes(ISO_8859_1));
+				}
+				assertEquals(6384, os.position());
+
+				is.array(bytes, 0, os.position());
+
+				for (int i = 0; i < 133; i++){
+					assertEquals(0xAB_CD_EF, is.readMedium());
+					assertEquals(0x1234_5678, is.readInt());
+					assertEquals(0x91929394_95969798L, is.readLong());
+					assertEquals(Math.PI, is.readDouble());
+					assertEquals(uuid, is.readUUID());
+					assertEquals("Answer42!", is.readLatin1String(9));
+				}
+				//assertEquals(9222, is.array().length);
 				assertEquals(6384, is.length());
 				assertEquals(6384, is.limit());
 				assertEquals(6384, is.position());
@@ -1094,6 +1138,28 @@ class BAOSTest {
 		long elapsed = end - start;
 		return String.format(Locale.ENGLISH, "%.3f, op/s=%.2f", elapsed/1000/1000.0, totalOperations * 1_000_000_000.0 / elapsed);
 	}
+
+	@SneakyThrows
+	public static void loop (long numberOfRepetitions, Callable<?> body){
+		while (numberOfRepetitions-- > 0)
+				body.call();// black hole - prevents JIT to cut out dead code
+	}
+
+	/** Similar to {@link #loop}, but with metrics and warm-up */
+	public static void loopMeasuredWarm (long numberOfRepetitions, Callable<?> body){
+		System.out.println("===== benchmark: "+ new Exception().getStackTrace()[1].toString());
+		long warmCnt = Math.min(50_000, numberOfRepetitions/10+10);
+
+		loop(warmCnt, body);
+
+		Runtime.getRuntime().gc();
+
+		long t = System.nanoTime();
+		loop(numberOfRepetitions, body);
+		System.out.println(benchToStr(t, System.nanoTime(), numberOfRepetitions));
+	}
+
+
 
 	@Test
 	void _ascii () {
@@ -1183,5 +1249,17 @@ class BAOSTest {
 		assertEquals(w.toString(UTF_16BE), b.toString());
 		assertArrayEquals(w.toByteArray(), b.toString().getBytes(UTF_16BE));
 		assertEquals(w.length()/2, b.length());
+	}
+
+	@Test
+	void _writeChars () {
+		var w = new BAOS();
+		val s = "💡➕🤣⏩🚀".repeat(50);
+		w.writeChars(s);
+		assertEquals(s, w.toString(UTF_16BE));
+		var r = new BAIS(w);
+		assertEquals(s, r.readUTF16String(s.length()));
+
+		assertEquals(s.length()*2, w.size());// char = 2 bytes
 	}
 }

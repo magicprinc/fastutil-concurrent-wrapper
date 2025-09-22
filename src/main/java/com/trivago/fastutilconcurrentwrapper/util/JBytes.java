@@ -10,6 +10,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.function.IntBinaryOperator;
 import java.util.function.IntUnaryOperator;
 
@@ -383,13 +384,12 @@ public class JBytes {
 		 *
 		 * @param array  to get a value from.
 		 * @param offset where extraction in the array should begin
-		 * @throws IndexOutOfBoundsException if the provided {@code offset} is outside
-		 *                                   the range [0, array.length - 8]
+		 * @throws IndexOutOfBoundsException if the provided {@code offset} is outside the range [0, array.length - 8]
 		 * @see #setDouble(byte[], int, double)
+		 * @see #getDoubleRaw(byte[], int)
 		 */
 		public static double getDouble(byte[] array, int offset) {
-			// Using Double.longBitsToDouble collapses NaN values to a single
-			// "canonical" NaN value
+			// Using Double.longBitsToDouble collapses NaN values to a single "canonical" NaN value
 			return Double.longBitsToDouble((long) LONG.get(array, offset));
 		}
 
@@ -404,9 +404,9 @@ public class JBytes {
 		 *
 		 * @param array  to get a value from.
 		 * @param offset where extraction in the array should begin
-		 * @throws IndexOutOfBoundsException if the provided {@code offset} is outside
-		 *                                   the range [0, array.length - 8]
+		 * @throws IndexOutOfBoundsException if the provided {@code offset} is outside the range [0, array.length - 8]
 		 * @see #setDoubleRaw(byte[], int, double)
+		 * @see #getDouble(byte[], int)
 		 */
 		public static double getDoubleRaw(byte[] array, int offset) {
 			// Just gets the bits as they are
@@ -594,13 +594,24 @@ public class JBytes {
 		 *                                   the range [0, array.length - 2]
 		 * @see #getDoubleRaw(byte[], int)
 		 */
-		public static void setDoubleRaw(byte[] array, int offset, double value) {
+		public static void setDoubleRaw (byte[] array, int offset, double value) {
 			// Just sets the bits as they are
 			DOUBLE.set(array, offset, value);
 		}
 
 		private static VarHandle create(Class<?> viewArrayClass) {
 			return MethodHandles.byteArrayViewVarHandle(viewArrayClass, ByteOrder.BIG_ENDIAN);
+		}
+
+		public static UUID getUUID (byte[] array, int offset) {
+			long mostSigBits = getLong(array, offset);
+			long leastSigBits = getLong(array, offset + 8);
+			return new UUID(mostSigBits, leastSigBits);
+		}
+
+		public static void setUUID (byte[] array, int offset, UUID uuid) {
+			setLong(array, offset, uuid.getMostSignificantBits());
+			setLong(array, offset + 8, uuid.getLeastSignificantBits());
 		}
 
 		/**
@@ -630,14 +641,16 @@ public class JBytes {
 		}
 
 		/**
-		 * Copies a given number of characters from a {@link CharSequence} into a byte array.
-		 *
-		 * @param cs a char sequence
-		 * @param offsetCharSequence an offset for the char sequence
-		 * @param toByteArray a byte array
-		 * @param offsetByteArray an offset for the byte array
-		 * @param numChars the number of characters to copy
-		 */
+		 Copies a given number of characters from a {@link CharSequence} into a byte array.
+
+		 😳 CharSequence vs String cs → speed is same
+
+		 @param cs a char sequence
+		 @param offsetCharSequence an offset for the char sequence
+		 @param toByteArray a byte array
+		 @param offsetByteArray an offset for the byte array
+		 @param numChars the number of characters to copy
+		*/
 		public static void copyCharsToByteArray (
 			CharSequence cs,
 			int offsetCharSequence,
@@ -665,5 +678,5 @@ public class JBytes {
 					cs.charAt(offsetCharSequence + charIdx));
 			}
 		}
-	}
+	}//DirectByteArrayAccess
 }

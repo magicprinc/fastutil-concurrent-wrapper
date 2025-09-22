@@ -205,9 +205,9 @@ public class BAIS extends ByteArrayInputStream implements ObjectInput, Measurabl
 	public UUID readUUID () {
 		if (count < pos + 16) throw new ArrayIndexOutOfBoundsException("readUUID, but "+available());// EOF
 		//val bb = ByteBuffer.wrap(bytes); long mostSigBits = bb.getLong(); long leastSigBits = bb.getLong();  быстрее за счёт VarHandle
-		long mostSigBits = readLong();// 0..7
-		long leastSigBits = readLong();// 8..15
-		return new UUID(mostSigBits, leastSigBits);
+		val uuid = JBytes.DirectByteArrayAccess.getUUID(buf, pos);
+		pos += 16;
+		return uuid;
 	}
 
 	@Override
@@ -290,6 +290,7 @@ loop:
 	}
 
 	/// @see java.nio.charset.StandardCharsets#UTF_16BE
+	/// @see BAOS#writeChars
 	public String readUTF16String (@PositiveOrZero int strLen) {
 		int byteLen = Math.min(strLen << 1, available());//*2
 		String s = new String(buf, pos, byteLen, UTF_16BE);

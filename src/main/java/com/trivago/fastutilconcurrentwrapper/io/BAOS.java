@@ -282,16 +282,15 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 		int len = s.length();
 		grow(len);
 		s.getBytes(0, len, buf, position);
-		position +=len;
+		position += len;
 		if (count < position) count = position;
 	}
 
+	/// @see com.trivago.fastutilconcurrentwrapper.io.BAIS#readUTF16String
+	/// @see #append
 	@Override
 	public void writeChars (String s) {
-		for (int i = 0, len = s.length(); i < len; i++){
-			int v = s.charAt(i);
-			writeChar(v);
-		}
+		append(s, 0, s.length());
 	}
 
 	@Override
@@ -393,9 +392,8 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 	@Override
 	public int hashCode () {
 		int result = 1;
-		for (int i = 0; i < count; i++){
-			result = 31 * result + buf[i];
-		}
+		for (int i = 0; i < count; i++)
+				result = 31 * result + buf[i];
 		return result;
 	}
 }

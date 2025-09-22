@@ -1,8 +1,13 @@
 package com.trivago.fastutilconcurrentwrapper.util;
 
+import com.trivago.fastutilconcurrentwrapper.io.BAIS;
+import com.trivago.fastutilconcurrentwrapper.io.BAOS;
+import com.trivago.fastutilconcurrentwrapper.io.BAOSTest;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.util.HexFormat;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.IntBinaryOperator;
@@ -214,5 +219,30 @@ class JBytesTest {
 		assertEquals("007fffffffffffffff0000", HexFormat.of().formatHex(bytes));
 		JBytes.DirectByteArrayAccess.setInt(bytes, 7, 0xA1B2C3D4);//11-4==7
 		assertEquals("007fffffffffffa1b2c3d4", HexFormat.of().formatHex(bytes));
+	}
+
+
+	@Test
+	void doubleAndFloat () {
+		var w = new BAOS();
+		var x = new BAIS(w.array(), 0, 160);
+		var y = new DataInputStream(new ByteArrayInputStream(w.array(), 0, 160));
+		var r = ThreadLocalRandom.current();
+		BAOSTest.loop(10_000, ()->{
+			w.reset();
+			double d = r.nextDouble();
+			w.writeDouble(d);
+			float f = r.nextFloat();
+			w.writeFloat(f);
+
+			x.reset();
+			y.reset();
+
+			assertEquals(d, x.readDouble());
+			assertEquals(d, y.readDouble());
+			assertEquals(f, x.readFloat());
+			assertEquals(f, y.readFloat());
+			return null;
+		});
 	}
 }
