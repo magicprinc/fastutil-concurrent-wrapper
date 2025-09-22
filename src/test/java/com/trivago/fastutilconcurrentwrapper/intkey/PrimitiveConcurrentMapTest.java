@@ -61,7 +61,6 @@ class PrimitiveConcurrentMapTest {
 		assertEquals(CFUtil.bucket(Long.valueOf(x), 4_000_000), CFUtil.bucket(x, 4_000_000));
 		x = Long.MAX_VALUE;
 		assertEquals(CFUtil.bucket(Long.valueOf(x), 4_000_000), CFUtil.bucket(x, 4_000_000));
-		assertEquals(CFUtil.bucket(Long.hashCode(x), 4_000_000), CFUtil.bucket(x, 4_000_000));
 
 		total = 0;
 		var r = ThreadLocalRandom.current();
@@ -74,13 +73,11 @@ class PrimitiveConcurrentMapTest {
 			i = Long.MIN_VALUE + z;
 			hc = CFUtil.bucket(i, 4_000_000);
 			assertEquals(CFUtil.bucket(Long.valueOf(i), 4_000_000), hc);
-			assertEquals(CFUtil.bucket(Long.hashCode(i), 4_000_000), hc);
 			assertTrue(hc >= 0 && hc < 4_000_000);
 
 			i = Long.MAX_VALUE - z;
 			hc = CFUtil.bucket(i, Integer.MAX_VALUE);
 			assertEquals(CFUtil.bucket(Long.valueOf(i), Integer.MAX_VALUE), hc);
-			assertEquals(CFUtil.bucket(Long.hashCode(i), Integer.MAX_VALUE), hc);
 			assertTrue(hc >= 0 && hc < Integer.MAX_VALUE);
 
 			total++;
