@@ -223,9 +223,8 @@ public class BAOSTest {
 
 		@Test  @DisplayName("Position throws exception for values too large")
 		void testPositionTooLarge() {
-			assertThrows(IllegalArgumentException.class, () ->
-				stream.position(((long) Integer.MAX_VALUE) + 1)
-			);
+			stream.position(((long) Integer.MAX_VALUE) + 1);
+			assertEquals(stream.capacity(), stream.position());
 		}
 
 		@Test
@@ -839,12 +838,12 @@ public class BAOSTest {
 	@Test
 	public void testPositionWrite2 () {
 		val fbaos = new BAOS();
-		fbaos.position(fbaos.array().length + 2);
+		fbaos.position(fbaos.array().length + 2);// limits to len
 		fbaos.write(1);
-		assertEquals(163, fbaos.length());
-		assertEquals(163, fbaos.size());
-		assertEquals(163, fbaos.position());
-		assertEquals(163, fbaos.writerIndex());
+		assertEquals(161, fbaos.length());
+		assertEquals(161, fbaos.size());
+		assertEquals(161, fbaos.position());
+		assertEquals(161, fbaos.writerIndex());
 	}
 
 	@Test
@@ -1007,6 +1006,7 @@ public class BAOSTest {
 	/// all: 2_281, op/s=219_195
 	@Test
 	void _benchmark () {
+		System.out.println("_benchmark BAOS/BAIS");
 		IntStream.range(0, 2).forEach(iteration->{
 			long t = System.nanoTime();
 			for (int loop = 1; loop < 500_000; loop++){
@@ -1049,6 +1049,8 @@ public class BAOSTest {
 
 	@Test
 	void _benchmarkJDK () {
+		System.out.println("_benchmarkJDK DOS&BAOS/BAIS");
+
 		IntStream.range(0, 2).forEach(iteration->{
 			long t = System.nanoTime();
 			for (int loop = 1; loop < 500_000; loop++){
@@ -1094,6 +1096,8 @@ public class BAOSTest {
 
 	@Test
 	void _benchmarkJDKBuffer () {
+		System.out.println("_benchmarkJDKBuffer ByteBuffer/BAIS");
+
 		IntStream.range(0, 2).forEach(__->{
 			long t = System.nanoTime();
 			for (int loop = 1; loop < 500_000; loop++){

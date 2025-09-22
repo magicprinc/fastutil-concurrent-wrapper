@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.Arrays;
 import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import it.unimi.dsi.fastutil.io.MeasurableStream;
 import it.unimi.dsi.fastutil.io.RepositionableStream;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.val;
 
@@ -61,8 +62,7 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 	public byte[] array (){ return buf; }
 
 	public void array (byte[] array) {
-		buf = array;
-		count = 0;  position = 0;
+		buf = array;  count = 0;  position = 0;
 	}
 
 	/** The current writing position. */
@@ -107,14 +107,12 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 	/// @see #resize(int)
 	@CanIgnoreReturnValue
 	public byte[] trim () {
-		buf = ByteArrays.trim(buf, count);
-		return buf;
+		return buf = ByteArrays.trim(buf, count);
 	}
 
 	@Override
 	public void write (int b) {
-		if (position >= buf.length)
-				buf = ByteArrays.grow(buf, position + 1, count);
+		grow(1);
 		buf[position++] = (byte)b;
 		if (count < position) count = position;
 	}
@@ -123,19 +121,19 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 	public void write (byte[] b, @PositiveOrZero int off, @PositiveOrZero int len) {
 		//ByteArrays.ensureOffsetLength(b, off, len);
 		Objects.checkFromIndexSize(off, len, b.length);
-		if (position + len > buf.length)
-				buf = ByteArrays.grow(buf, position + len, position);
-		System.arraycopy(b, off, buf, position, len);
+		grow(len);
+		System.arraycopy(b,off, buf,position, len);
 		position += len;
 		if (count < position) count = position;
 	}
 
 	@Override
 	public void position (@PositiveOrZero long newPosition) {
-		if (newPosition > Integer.MAX_VALUE) throw new IllegalArgumentException("Position too large: "+ newPosition);
-		position = (int)newPosition;
+		position = (int) Math.min(newPosition, buf.length);
 	}
-	public void writerIndex (@PositiveOrZero int newPosition){ position = newPosition; }
+	public void writerIndex (@PositiveOrZero int newPosition) {
+		position = Math.min(newPosition, buf.length);
+	}
 
 	@Override public @PositiveOrZero long position (){ return position; }
 	public @PositiveOrZero int writerIndex (){ return position; }
@@ -164,13 +162,12 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 	/// @param additionalCapacity the number of bytes to add to the current buffer size
 	/// @see #size()
 	/// @see org.springframework.util.ResizableByteArrayOutputStream#grow(int)
-	public void grow (@PositiveOrZero int additionalCapacity) {
-		//Assert.isTrue(additionalCapacity >= 0, "Additional capacity must be 0 or higher");
-		if (count < position) additionalCapacity = additionalCapacity + position - count;
-		int needed = count + additionalCapacity;
-		if (needed > buf.length){// size + new > capacity
-			int newCapacity = (int)Math.min(Math.max((long)buf.length + (buf.length >> 1), needed), Arrays.MAX_ARRAY_SIZE);
-			resize(newCapacity);
+	public void grow (@Positive int len) {
+		if (position + len > buf.length){
+			int newLength = (int)Math.max(Math.min((long) buf.length + ( buf.length >> 1), Arrays.MAX_ARRAY_SIZE), position + len);
+			val resizedBuffer = new byte[newLength];
+			System.arraycopy(buf,0, resizedBuffer,0, count);
+			buf = resizedBuffer;
 		}
 	}
 
@@ -239,8 +236,7 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 
 	public void writeMedium (int v) {
 		write(v >> 16);
-		write(v >> 8);
-		write(v);
+		writeShort(v);
 	}
 
 	public void writeUUID (UUID uuid) {
@@ -348,8 +344,7 @@ public class BAOS extends ByteArrayOutputStream implements RepositionableStream,
 		final int len = end - start;
 		Objects.checkFromIndexSize(start, len, csq.length());
 		final int len2 = len << 1;
-		if (position + len2 > buf.length)
-				buf = ByteArrays.grow(buf, position + len2, position);
+		grow(len2);
 
 		JBytes.DirectByteArrayAccess.copyCharsToByteArray(csq, start,  buf, position,  len);
 
